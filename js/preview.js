@@ -22,7 +22,6 @@
     var vp = vb.split(' ').map(parseFloat), x1 = vp[0], x2 = vp[0] + vp[2];
     var html='<line x1="'+x1+'" y1="0" x2="'+x2+'" y2="0" stroke="var(--muted)" stroke-width="1" opacity=".5"'+ne+'/>';
     [1,-1].forEach(function(yy){ html+='<line x1="'+x1+'" y1="'+(-yy)+'" x2="'+x2+'" y2="'+(-yy)+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"'+ne+'/>'; });
-    html+='<line x1="0" y1="0" x2="'+st.sx+'" y2="'+(-st.sy)+'" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"'+ne+'/>';
     segs.forEach(function(g, i){
       var P=g.P, s=g.s, c = i % 2 ? 'var(--c2)' : 'var(--c1)', d = 'M'+P[0][0]+' '+(-P[0][1]);
       if(s.type === 'bezier') d += ' C'+P[1][0]+' '+(-P[1][1])+' '+P[2][0]+' '+(-P[2][1])+' '+P[3][0]+' '+(-P[3][1]);

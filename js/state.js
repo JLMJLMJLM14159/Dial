@@ -66,17 +66,21 @@
     s.h1x = 0; s.h2x = L;
   }
 
-  // Does the curve with these heights (start, handle 1, handle 2, end) stay within -1..1? Start and end are already in the band,
-  // so only the turning points inside the section matter: the roots of y'(t), a quadratic Bézier in p1 - y0, p2 - p1, y3 - p2.
-  function inBand(y0, p1, p2, y3){
+  // Heights of a Bézier's turning points strictly inside the section: the roots of y'(t), a quadratic Bézier in
+  // p1 - y0, p2 - p1 and y3 - p2.
+  function turningYs(y0, p1, p2, y3){
     var d0 = p1 - y0, d1 = p2 - p1, d2 = y3 - p2, a = d0 - 2 * d1 + d2, b = 2 * (d1 - d0), c = d0, ts = [];
     if(Math.abs(a) < 1e-12){ if(b !== 0) ts.push(-c / b); }
     else{ var disc = b * b - 4 * a * c; if(disc >= 0){ var q = Math.sqrt(disc); ts.push((-b - q) / (2 * a), (-b + q) / (2 * a)); } }
-    return ts.every(function(t){
-      if(!(t > 0 && t < 1)) return true;
-      var u = 1 - t, y = u * u * u * y0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * y3;
-      return Math.abs(y) <= 1 + 1e-9;
+    return ts.filter(function(t){ return t > 0 && t < 1; }).map(function(t){
+      var u = 1 - t;
+      return u * u * u * y0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * y3;
     });
+  }
+  // Does the curve with these heights (start, handle 1, handle 2, end) stay within -1..1? Start and end are already in the band,
+  // so only the turning points inside the section matter.
+  function inBand(y0, p1, p2, y3){
+    return turningYs(y0, p1, p2, y3).every(function(y){ return Math.abs(y) <= 1 + 1e-9; });
   }
   function startYOf(s){
     var y = D.state.start.sy, list = D.state.sections;
@@ -152,6 +156,46 @@
     refitAll();
   }
 
+  // Stretch and shift every height so the curve's highest point reaches 1 and its lowest -1. Every section type is built
+  // from its heights in a straight-line way, so this keeps each shape exactly (apart from rounding to 4 decimals).
+  function scaleToFit(){
+    var st = D.state, y = st.start.sy, lo = y, hi = y;
+    st.sections.forEach(function(s){
+      var ys = [s.ey];
+      if(s.type === 'bezier') ys = ys.concat(turningYs(y, s.h1y, s.h2y, s.ey));
+      ys.forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); });
+      y = s.ey;
+    });
+    var mid = (lo + hi) / 2, half = (hi - lo) / 2;
+    function f(v){ return half > 1e-9 ? (v - mid) / half : v - mid; }  // a flat line just moves to the middle
+    st.start.sy = rnd(clamp(f(st.start.sy), -1, 1));
+    st.sections.forEach(function(s){ s.ey = rnd(clamp(f(s.ey), -1, 1)); s.h1y = rnd(f(s.h1y)); s.h2y = rnd(f(s.h2y)); });
+    refitAll();
+  }
+
+  // One cycle of the wave as N evenly spaced heights. x runs from the first point to the last end, so jumps fall between
+  // samples, and after the last end the wave jumps back to the first point's height to repeat. A Bézier is read by finding
+  // the t where x(t) reaches each sample's x, which has exactly one answer because sections never go backwards.
+  function sampleCycle(N){
+    var geo = sectionGeo(), out = new Float32Array(N), total = 0, i = 0;
+    geo.forEach(function(g){ total += g.s.length; });
+    if(!(total > 0)) return out;  // no length at all: silence
+    for(var k = 0; k < N; k++){
+      var x = k / N * total;
+      while(i < geo.length - 1 && !(geo[i].s.length > 0 && x < geo[i].X + geo[i].s.length)) i++;
+      var g = geo[i], s = g.s, rx = x - g.X;
+      if(s.type !== 'bezier'){ out[k] = shapeY(s, g.Y, rx / s.length); continue; }
+      var lo = 0, hi = 1, t, u;
+      for(var j = 0; j < 40; j++){
+        t = (lo + hi) / 2; u = 1 - t;
+        if(3 * u * u * t * s.h1x + 3 * u * t * t * s.h2x + t * t * t * s.length < rx) lo = t; else hi = t;
+      }
+      t = (lo + hi) / 2; u = 1 - t;
+      out[k] = u * u * u * g.Y + 3 * u * u * t * s.h1y + 3 * u * t * t * s.h2y + t * t * t * s.ey;
+    }
+    return out;
+  }
+
   function blank(y0){
     var y = y0 ? rnd(clamp(y0, -1, 1)) : 0, L = 5;
     return { id: Date.now() + '-' + Math.floor(Math.random() * 1e5), type: 'bezier', smooth: 'both', length: L, ey: y, h1x: rnd(L / 3), h1y: y, h2x: rnd(2 * L / 3), h2y: y };
@@ -216,7 +260,7 @@
   }
 
   D.FIELDS = FIELDS; D.START_FIELDS = START_FIELDS; D.BYKEY = BYKEY; D.TYPES = TYPES; D.SMOOTHS = SMOOTHS;
-  D.shapeY = shapeY; D.setType = setType;
+  D.shapeY = shapeY; D.setType = setType; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
   D.snapshot = snapshot; D.sectionGeo = sectionGeo;

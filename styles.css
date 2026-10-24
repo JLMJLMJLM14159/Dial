@@ -35,7 +35,12 @@ input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px}
 select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer}
 select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .dial.choice{grid-template-columns:96px minmax(0,220px)}
-.bar{display:flex;gap:10px;align-items:center;margin:20px 0 28px}
+.bar{display:flex;gap:10px;align-items:center;margin:20px 0 6px}
+.fitnote{margin:0 0 28px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 8px}
+.dial label[for=freq-n],.dial label[for=vol-n]{line-height:1.25}
+#notename{margin:-2px 0 4px 108px}
+@media (max-width:480px){#notename{margin-left:90px}}
 .out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .out-head h2{font-size:1.05rem;margin:0}
 .out-head div{display:flex;gap:8px}

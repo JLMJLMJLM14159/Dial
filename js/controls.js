@@ -9,6 +9,7 @@
   function renderOut(){
     out.textContent = JSON.stringify(D.snapshot(), null, 2);
     D.drawPreview();
+    if(D.waveChanged) D.waveChanged();
   }
 
   // Slider tracks follow the length and each handle's allowed range depends on the rest of the section, so refresh them in place.
@@ -135,6 +136,10 @@
     D.save(); render();
     var last = host.lastElementChild;
     if(last) last.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+  document.getElementById('fit').addEventListener('click', function(){
+    D.scaleToFit();
+    D.save(); render();
   });
   document.getElementById('reset').addEventListener('click', function(){
     D.state = D.newState();

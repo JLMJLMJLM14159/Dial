@@ -12,17 +12,32 @@
   <p class="lede">Each section is one piece of the line, and the sections join end to start in order. Pick a type for each: a Bézier curve with handles, a Sine piece, a Flat stretch or an instant Jump. Values are recorded as you go and kept in this browser.</p>
 
   <svg id="preview" role="img" aria-label="Preview of the joined curves"></svg>
-  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point only moves up and down, with a dark line joining it to the middle line. The square at the end sits at the same height as the first point, joined to the last endpoint by a dark line. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
+  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point is where the wave starts and only moves up and down. The square at the end sits at the same height as the first point: the dark line up or down to it is where the wave jumps back to the start to repeat. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
+
+  <section class="section">
+    <div class="head"><h2>Play</h2><button class="primary" id="play" type="button" aria-pressed="false">Play</button></div>
+    <p class="note cardnote">Plays the line as one repeating cycle. Changing the frequency changes the pitch, even while it plays.</p>
+    <div class="dial"><label for="freq-n">Frequency (Hz)</label><input type="range" id="freq-r" min="0" max="1000" step="1" aria-label="Frequency slider"><input type="number" id="freq-n" min="20" max="20000" step="any"></div>
+    <p class="note cardnote" id="notename"></p>
+    <div class="dial"><label for="vol-n">Volume (%)</label><input type="range" id="vol-r" min="0" max="100" step="1" aria-label="Volume slider"><input type="number" id="vol-n" min="0" max="100" step="1"></div>
+    <p class="note">Hold a key to play a note for as long as you hold it: A W S E D F T G Y H U J K O L P ; are piano keys starting from <span id="oct">C4</span>, and Z and X move down and up an octave.</p>
+    <div class="row">
+      <button type="button" id="midi">Connect MIDI keyboard</button>
+      <button type="button" id="wav">Download cycle (WAV)</button>
+    </div>
+    <p class="note cardnote" id="midistatus" aria-live="polite"></p>
+  </section>
 
   <section class="section">
     <div class="head"><h2>First point</h2></div>
-    <p class="note cardnote">Move it up or down to add a straight line from the middle line. It can’t move sideways.</p>
+    <p class="note cardnote">Where the wave starts. It only moves up and down.</p>
     <div id="startrows"></div>
   </section>
 
   <div id="sections"></div>
 
-  <div class="bar"><button class="primary" id="add" type="button">Add section</button></div>
+  <div class="bar"><button class="primary" id="add" type="button">Add section</button><button type="button" id="fit">Scale to fit</button></div>
+  <p class="note fitnote">Scale to fit stretches the wave up or down and centres it, so it fills the band from −1 to 1 without changing its shape.</p>
 
   <div class="out-head">
     <h2>Recorded values</h2>
@@ -40,6 +55,7 @@
 <script src="js/preview.js"></script>
 <script src="js/controls.js"></script>
 <script src="js/drag.js"></script>
+<script src="js/synth.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
