@@ -295,15 +295,18 @@
     return { name: typeof o.name === 'string' ? o.name.slice(0, 100) : '', newer: num(o.version, 1) > VERSION,
              start: { id:'start', sx:0, sy: sy }, sections: secs };
   }
+  // What counts as the wave for the unsaved-changes check: its name and its recorded values.
+  function waveKey(st){ st = st || D.state; return JSON.stringify([st.name || '', snapshot(st)]); }
   // Make an opened wave the current one, fixing anything outside the editor's rules the same way saved data is fixed.
-  // Returns true if anything had to change.
+  // The file as it was counts as saved, so if anything had to be fixed the wave shows as changed.
   function loadWave(st){
-    var before = JSON.stringify(snapshot(st));
-    st.sections.forEach(function(s){ s.h1y = rnd(s.h1y); s.h2y = rnd(s.h2y); });
     var newer = st.newer; delete st.newer;
+    var before = waveKey(st);
+    st.sections.forEach(function(s){ s.h1y = rnd(s.h1y); s.h2y = rnd(s.h2y); });
     D.state = st;
     clampAll();
-    return { adjusted: JSON.stringify(snapshot()) !== before, newer: newer };
+    st.savedAs = before;
+    return { adjusted: waveKey() !== before, newer: newer };
   }
 
   // x values are measured from each section's start; every y value is a height above or below the middle line (y = 0).
@@ -321,6 +324,6 @@
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
   D.snapshot = function(){ return snapshot(); }; D.sectionGeo = sectionGeo;
-  D.fileData = fileData; D.fromFile = fromFile; D.loadWave = loadWave;
+  D.fileData = fileData; D.fromFile = fromFile; D.loadWave = loadWave; D.waveKey = waveKey;
   D.state = newState();
 })(window.Dial = window.Dial || {});

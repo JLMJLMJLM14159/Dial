@@ -35,16 +35,30 @@
   </section>
 
   <section class="section">
-    <div class="head"><h2>Save and share</h2></div>
+    <div class="head"><h2>Save and share</h2><span class="unsaved" id="unsaved" hidden>* Unsaved changes</span></div>
     <p class="note cardnote">Save your wave as a small file and send it to anyone: they can open it here and carry on editing. You can also drop a wave file anywhere on the page to open it.</p>
     <div class="dial choice"><label for="wave-name">Name</label><input type="text" id="wave-name" maxlength="100" placeholder="my-wave" autocomplete="off"></div>
     <div class="row">
       <button type="button" id="save">Save wave</button>
       <button type="button" id="open">Open wave</button>
+      <button type="button" id="new">New wave</button>
       <input type="file" id="wave-file" accept=".json,application/json" hidden>
     </div>
     <p class="note cardnote" id="filestatus" aria-live="polite"></p>
+    <p class="note">The * in the browser tab means the wave has changes since it was last saved or opened. If it does, opening another wave or starting a new one asks whether to save it first.</p>
   </section>
+
+  <dialog id="ask" aria-labelledby="ask-title">
+    <form method="dialog">
+      <h2 id="ask-title">Unsaved changes</h2>
+      <p id="ask-text"></p>
+      <div class="row">
+        <button class="primary" value="save">Save, then continue</button>
+        <button value="discard">Don’t save</button>
+        <button value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
 
   <div id="sections"></div>
 
@@ -55,7 +69,6 @@
     <h2>Recorded values</h2>
     <div>
       <button type="button" id="copy">Copy JSON</button>
-      <button type="button" id="reset">Reset all</button>
     </div>
   </div>
   <pre id="out" aria-live="polite"></pre>

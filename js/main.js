@@ -3,5 +3,5 @@
   window.getDialValues = D.snapshot;
   D.load();
   D.render();
-  D.showName();
+  D.initFiles();
 })(window.Dial = window.Dial || {});

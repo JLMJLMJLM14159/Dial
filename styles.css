@@ -34,6 +34,11 @@ input[type=number]{font:inherit;font-variant-numeric:tabular-nums;color:var(--in
 input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px}
 input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;width:100%}
 input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.unsaved{color:var(--muted);font-size:.9rem}
+dialog{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:calc(100% - 32px);max-width:440px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{font-size:1.05rem;margin:0 0 6px}
+dialog p{margin:0 0 6px}
 select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer}
 select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .dial.choice{grid-template-columns:96px minmax(0,220px)}
