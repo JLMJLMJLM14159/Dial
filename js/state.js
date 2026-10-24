@@ -95,7 +95,7 @@
       start: { y: state.start.sy },
       sections: state.sections.map(function(s, i){
         return {
-          section: i + 1, length: s.length, end: { x: s.length, y: s.ey },
+          section: i + 1, length: s.length, end: { y: s.ey },
           handle1: { x: s.h1x, y: s.h1y },
           handle2: { x: s.h2x, y: s.h2y }
         };
