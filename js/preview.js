@@ -19,7 +19,8 @@
     svg.setAttribute('viewBox', vb);
     var u=parseFloat(vb.split(' ')[2])*0.012, ne=' vector-effect="non-scaling-stroke"', hits='';
     function hit(x,y,i,k){ return '<circle cx="'+x+'" cy="'+(-y)+'" r="'+(u*3)+'" fill="transparent" data-i="'+i+'" data-k="'+k+'" style="cursor:grab"/>'; }
-    var vp = vb.split(' ').map(parseFloat), x1 = vp[0], x2 = vp[0] + vp[2];
+    // The guide lines run well past the view so they reach the edges when the box is wider than the drawing.
+    var vp = vb.split(' ').map(parseFloat), x1 = vp[0] - 10 * vp[2], x2 = vp[0] + 11 * vp[2];
     var html='<line x1="'+x1+'" y1="0" x2="'+x2+'" y2="0" stroke="var(--muted)" stroke-width="1" opacity=".5"'+ne+'/>';
     [1,-1].forEach(function(yy){ html+='<line x1="'+x1+'" y1="'+(-yy)+'" x2="'+x2+'" y2="'+(-yy)+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"'+ne+'/>'; });
     segs.forEach(function(g, i){
@@ -37,9 +38,6 @@
       });
       hits+=hit(P[1][0],P[1][1],i,'h1')+hit(P[2][0],P[2][1],i,'h2');
     });
-    var last = segs[segs.length-1].P[3], endX = last[0];
-    html+='<line x1="'+endX+'" y1="'+(-last[1])+'" x2="'+endX+'" y2="'+(-st.sy)+'" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"'+ne+'/>';
-    html+='<rect x="'+(endX-u*0.9)+'" y="'+(-st.sy-u*0.9)+'" width="'+(u*1.8)+'" height="'+(u*1.8)+'" fill="var(--ink)"/>';
     html+='<circle cx="'+st.sx+'" cy="'+(-st.sy)+'" r="'+(u*0.9)+'" fill="var(--ink)"/>';
     segs.forEach(function(g, i){
       html+='<circle cx="'+g.P[3][0]+'" cy="'+(-g.P[3][1])+'" r="'+(u*0.9)+'" fill="var(--ink)"/>';

@@ -156,8 +156,9 @@
     refitAll();
   }
 
-  // Stretch and shift every height so the curve's highest point reaches 1 and its lowest -1. Every section type is built
-  // from its heights in a straight-line way, so this keeps each shape exactly (apart from rounding to 4 decimals).
+  // Shift every height so the first point sits on the middle line, then stretch or shrink them so the curve is as large as
+  // fits: its furthest point from the middle line reaches 1 or -1. Every section type is built from its heights in a
+  // straight-line way, so this keeps each shape exactly (apart from rounding to 4 decimals).
   function scaleToFit(){
     var st = D.state, y = st.start.sy, lo = y, hi = y;
     st.sections.forEach(function(s){
@@ -166,8 +167,8 @@
       ys.forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); });
       y = s.ey;
     });
-    var mid = (lo + hi) / 2, half = (hi - lo) / 2;
-    function f(v){ return half > 1e-9 ? (v - mid) / half : v - mid; }  // a flat line just moves to the middle
+    var y0 = st.start.sy, reach = Math.max(hi - y0, y0 - lo);
+    function f(v){ return reach > 1e-9 ? (v - y0) / reach : v - y0; }  // a flat line just moves onto the middle line
     st.start.sy = rnd(clamp(f(st.start.sy), -1, 1));
     st.sections.forEach(function(s){ s.ey = rnd(clamp(f(s.ey), -1, 1)); s.h1y = rnd(f(s.h1y)); s.h2y = rnd(f(s.h2y)); });
     refitAll();

@@ -12,7 +12,7 @@
   <p class="lede">Each section is one piece of the line, and the sections join end to start in order. Pick a type for each: a Bézier curve with handles, a Sine piece, a Flat stretch or an instant Jump. Values are recorded as you go and kept in this browser.</p>
 
   <svg id="preview" role="img" aria-label="Preview of the joined curves"></svg>
-  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point is where the wave starts and only moves up and down. The square at the end sits at the same height as the first point: the dark line up or down to it is where the wave jumps back to the start to repeat. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
+  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point is where the wave starts and only moves up and down. After the last dot, the wave jumps back to the first point’s height and repeats. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
 
   <section class="section">
     <div class="head"><h2>Play</h2><button class="primary" id="play" type="button" aria-pressed="false">Play</button></div>
@@ -43,7 +43,7 @@
   <div id="sections"></div>
 
   <div class="bar"><button class="primary" id="add" type="button">Add section</button><button type="button" id="fit">Scale to fit</button></div>
-  <p class="note fitnote">Scale to fit stretches the wave up or down and centres it, so it fills the band from −1 to 1 without changing its shape.</p>
+  <p class="note fitnote">Scale to fit moves the wave so the first point sits on the middle line, then makes it as large as fits between −1 and 1, without changing its shape.</p>
 
   <div class="out-head">
     <h2>Recorded values</h2>
