@@ -248,8 +248,8 @@
     try{ localStorage.setItem(KEY, JSON.stringify(D.state)); }catch(e){}
   }
 
-  function snapshot(){
-    var state = D.state;
+  function snapshot(state){
+    state = state || D.state;
     return {
       start: { y: state.start.sy },
       sections: state.sections.map(function(s, i){
@@ -262,6 +262,48 @@
         return o;
       })
     };
+  }
+
+  // A saved wave file: the recorded values with a format name, version and the wave's name, so it can be recognised,
+  // opened again and shared. Version 1 is this layout; a later version can add fields without breaking old files.
+  var FORMAT = 'dial-wave', VERSION = 1;
+  function fileData(){
+    var snap = snapshot();
+    return { format: FORMAT, version: VERSION, name: D.state.name || '', start: snap.start, sections: snap.sections };
+  }
+  // Turn a saved wave (or a copy of the recorded values) back into editor state, without fixing anything yet.
+  // Returns null if it isn't a wave at all. Missing values get sensible defaults.
+  function fromFile(o){
+    if(!o || typeof o !== 'object' || !Array.isArray(o.sections) || !o.sections.length) return null;
+    function num(v, d){ return typeof v === 'number' && isFinite(v) ? v : d; }
+    var sy = num(o.start && o.start.y, 0), y = sy, secs = [];
+    for(var i = 0; i < o.sections.length; i++){
+      var f = o.sections[i];
+      if(!f || typeof f !== 'object') return null;
+      var type = HAS(TYPES, f.type) ? f.type : (f.handle1 ? 'bezier' : null);  // recorded values from before types were added
+      if(!type) return null;
+      var s = blank(y);
+      s.id += '-' + i; s.type = type; s.smooth = HAS(SMOOTHS, f.smooth) ? f.smooth : 'both';
+      if(type === 'jump'){ s.length = 0; s.lastLength = 5; } else s.length = num(f.length, 5);
+      s.ey = type === 'flat' ? y : num(f.end && f.end.y, y);
+      if(type === 'bezier'){
+        s.h1x = num(f.handle1 && f.handle1.x, s.length / 3); s.h1y = num(f.handle1 && f.handle1.y, y);
+        s.h2x = num(f.handle2 && f.handle2.x, 2 * s.length / 3); s.h2y = num(f.handle2 && f.handle2.y, s.ey);
+      }
+      secs.push(s); y = s.ey;
+    }
+    return { name: typeof o.name === 'string' ? o.name.slice(0, 100) : '', newer: num(o.version, 1) > VERSION,
+             start: { id:'start', sx:0, sy: sy }, sections: secs };
+  }
+  // Make an opened wave the current one, fixing anything outside the editor's rules the same way saved data is fixed.
+  // Returns true if anything had to change.
+  function loadWave(st){
+    var before = JSON.stringify(snapshot(st));
+    st.sections.forEach(function(s){ s.h1y = rnd(s.h1y); s.h2y = rnd(s.h2y); });
+    var newer = st.newer; delete st.newer;
+    D.state = st;
+    clampAll();
+    return { adjusted: JSON.stringify(snapshot()) !== before, newer: newer };
   }
 
   // x values are measured from each section's start; every y value is a height above or below the middle line (y = 0).
@@ -278,6 +320,7 @@
   D.shapeY = shapeY; D.setType = setType; D.lockSection = lockSection; D.linkEnds = linkEnds; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
-  D.snapshot = snapshot; D.sectionGeo = sectionGeo;
+  D.snapshot = function(){ return snapshot(); }; D.sectionGeo = sectionGeo;
+  D.fileData = fileData; D.fromFile = fromFile; D.loadWave = loadWave;
   D.state = newState();
 })(window.Dial = window.Dial || {});

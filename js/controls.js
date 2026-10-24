@@ -153,7 +153,7 @@
   document.getElementById('reset').addEventListener('click', function(){
     D.state = D.newState();
     D.state.sections.push(D.blank());
-    D.save(); render();
+    D.save(); render(); D.showName();
   });
   document.getElementById('copy').addEventListener('click', function(){
     var btn = this, txt = out.textContent;

@@ -34,6 +34,18 @@
     <p class="note">The cycle is one repeat of the shape, exactly as drawn, for loading into a wavetable synth or sampler. The note is the current frequency held for the note length (up to 60 seconds), to drop onto a track in a DAW.</p>
   </section>
 
+  <section class="section">
+    <div class="head"><h2>Save and share</h2></div>
+    <p class="note cardnote">Save your wave as a small file and send it to anyone: they can open it here and carry on editing. You can also drop a wave file anywhere on the page to open it.</p>
+    <div class="dial choice"><label for="wave-name">Name</label><input type="text" id="wave-name" maxlength="100" placeholder="my-wave" autocomplete="off"></div>
+    <div class="row">
+      <button type="button" id="save">Save wave</button>
+      <button type="button" id="open">Open wave</button>
+      <input type="file" id="wave-file" accept=".json,application/json" hidden>
+    </div>
+    <p class="note cardnote" id="filestatus" aria-live="polite"></p>
+  </section>
+
   <div id="sections"></div>
 
   <div class="bar"><button class="primary" id="add" type="button">Add section</button><button type="button" id="fit">Scale to fit</button></div>
@@ -56,6 +68,7 @@
 <script src="js/controls.js"></script>
 <script src="js/drag.js"></script>
 <script src="js/synth.js"></script>
+<script src="js/files.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
