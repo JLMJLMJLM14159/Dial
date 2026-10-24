@@ -12,7 +12,7 @@
   <p class="lede">Each section is one piece of the line, and the sections join end to start in order. Pick a type for each: a Bézier curve with handles, a Sine piece, a Flat stretch or an instant Jump. Values are recorded as you go and kept in this browser.</p>
 
   <svg id="preview" role="img" aria-label="Preview of the joined curves"></svg>
-  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point is where the wave starts and only moves up and down. After the last dot, the wave jumps back to the first point’s height and repeats. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
+  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point is where the wave starts and only moves up and down. The wave always ends at the first point’s height, so it repeats without a jump. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
 
   <section class="section">
     <div class="head"><h2>Play</h2><button class="primary" id="play" type="button" aria-pressed="false">Play</button></div>
@@ -36,7 +36,7 @@
 
   <section class="section">
     <div class="head"><h2>First point</h2></div>
-    <p class="note cardnote">Where the wave starts. It only moves up and down.</p>
+    <p class="note cardnote">Where the wave starts. It only moves up and down. The wave always ends at this height too, so it repeats without a jump: the last section’s End y (or the last one before any Flat sections at the end) is linked to it.</p>
     <div id="startrows"></div>
   </section>
 

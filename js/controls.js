@@ -30,6 +30,8 @@
   function refreshAll(){
     D.refitAll();
     D.state.sections.forEach(applyRanges);
+    var st = D.refs['startsy'];  // the first point can move when the locked end does
+    if(st){ st.r.value = D.state.start.sy; if(document.activeElement !== st.n) st.n.value = D.state.start.sy; }
   }
 
   // Set one value from outside its row (used by dragging) and keep the row in sync.
@@ -38,6 +40,7 @@
     obj[key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
     var ref = D.refs[obj.id + key];
     if(ref){ if(ref.r) ref.r.value = obj[key]; ref.n.value = obj[key]; }
+    D.linkEnds(obj, key);
     refreshAll();
   }
 
@@ -61,6 +64,7 @@
     function commit(v){
       obj[f.key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
       if(r) r.value = obj[f.key];
+      D.linkEnds(obj, f.key);
       refreshAll();
       D.save(); renderOut();
     }
@@ -117,7 +121,16 @@
         head.appendChild(rm);
       }
       sec.appendChild(head);
-      FIELDS.forEach(function(f){ if(f.types.indexOf(s.type) >= 0) sec.appendChild(buildRow(s, f)); });
+      var locked = s === D.lockSection();
+      FIELDS.forEach(function(f){
+        if(f.types.indexOf(s.type) < 0) return;
+        sec.appendChild(buildRow(s, f));
+        if(f.key === 'ey' && locked){
+          var ln = document.createElement('p');
+          ln.className = 'note cardnote'; ln.textContent = 'Linked to the first point, so the wave repeats without a jump. Changing one moves both.';
+          sec.appendChild(ln);
+        }
+      });
       if(s.type === 'sine'){
         var row = document.createElement('div'), l = document.createElement('label'), smId = 's-' + s.id;
         row.className = 'dial choice'; l.htmlFor = smId; l.textContent = 'Smooth at';

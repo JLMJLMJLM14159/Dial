@@ -115,10 +115,24 @@
     }
     s.h1y = rnd(r1); s.h2y = rnd(r2);
   }
+  // The wave ends at the first point's height so it repeats without a jump. That end height is set by the last section
+  // that isn't Flat, since a Flat section just carries the height before it along.
+  function lockSection(){
+    var list = D.state.sections;
+    for(var i = list.length - 1; i >= 0; i--) if(list[i].type !== 'flat') return list[i];
+    return null;
+  }
+  // After a height is changed: the locked end and the first point are one value, so moving the end moves the start.
+  // (Moving the start moves the end through refitAll.)
+  function linkEnds(obj, key){
+    if(key === 'ey' && obj === lockSection()) D.state.start.sy = obj.ey;
+  }
+
   // Re-check every section after any change: a section's start height is the previous section's end height.
-  // A jump always has length 0 and a flat section always ends at its start height.
+  // A jump always has length 0, a flat section always ends at its start height, and the locked end matches the first point.
   function refitAll(){
-    var y = D.state.start.sy;
+    var y = D.state.start.sy, lk = lockSection();
+    if(lk) lk.ey = y;
     D.state.sections.forEach(function(s){
       if(s.type === 'jump') s.length = 0;
       if(s.type === 'flat') s.ey = y;
@@ -261,7 +275,7 @@
   }
 
   D.FIELDS = FIELDS; D.START_FIELDS = START_FIELDS; D.BYKEY = BYKEY; D.TYPES = TYPES; D.SMOOTHS = SMOOTHS;
-  D.shapeY = shapeY; D.setType = setType; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
+  D.shapeY = shapeY; D.setType = setType; D.lockSection = lockSection; D.linkEnds = linkEnds; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
   D.snapshot = snapshot; D.sectionGeo = sectionGeo;
