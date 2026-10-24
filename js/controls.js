@@ -11,7 +11,7 @@
     D.drawPreview();
   }
 
-  // Slider tracks follow the length and each handle's allowed x depends on the other, so refresh them in place.
+  // Slider tracks follow the length and each handle's allowed range depends on the rest of the section, so refresh them in place.
   function applyRanges(obj){
     FIELDS.forEach(function(f){
       if(f.num) return;
@@ -20,8 +20,15 @@
       ref.r.min = tlo; ref.r.max = thi; ref.r.step = (thi - tlo) / 1000 || 'any';
       ref.n.min = lo; ref.n.max = hi;
       obj[f.key] = rnd(clamp(obj[f.key], lo, hi));
-      ref.r.value = obj[f.key]; ref.n.value = obj[f.key];
+      ref.r.value = obj[f.key];
+      if(document.activeElement !== ref.n) ref.n.value = obj[f.key];  // don't overwrite a number being typed
     });
+  }
+
+  // Any change can move another section's limits (a section starts at the previous one's end), so refresh everything.
+  function refreshAll(){
+    D.refitAll();
+    D.state.sections.forEach(applyRanges);
   }
 
   // Set one value from outside its row (used by dragging) and keep the row in sync.
@@ -30,8 +37,7 @@
     obj[key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
     var ref = D.refs[obj.id + key];
     if(ref){ if(ref.r) ref.r.value = obj[key]; ref.n.value = obj[key]; }
-    if(key === 'length') D.fitHandles(obj);
-    if(key === 'length' || f.hx) applyRanges(obj);
+    refreshAll();
   }
 
   function buildRow(obj, f){
@@ -54,8 +60,7 @@
     function commit(v){
       obj[f.key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
       if(r) r.value = obj[f.key];
-      if(f.key === 'length') D.fitHandles(obj);
-      if(f.key === 'length' || f.hx) applyRanges(obj);
+      refreshAll();
       D.save(); renderOut();
     }
     if(r) r.addEventListener('input', function(){ commit(parseFloat(r.value)); n.value = obj[f.key]; });
@@ -88,7 +93,7 @@
         rm.type = 'button'; rm.className = 'remove'; rm.textContent = 'Remove';
         rm.addEventListener('click', function(){
           D.state.sections = D.state.sections.filter(function(x){ return x.id !== s.id; });
-          D.save(); render();
+          D.refitAll(); D.save(); render();
         });
         head.appendChild(rm);
       }
