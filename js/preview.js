@@ -38,12 +38,12 @@
       });
       hits+=hit(P[1][0],P[1][1],i,'h1')+hit(P[2][0],P[2][1],i,'h2');
     });
-    html+='<circle cx="'+st.sx+'" cy="'+(-st.sy)+'" r="'+(u*0.9)+'" fill="var(--ink)"/>';
+    // The start is a square that can't be dragged: it always sits at the last end's height, since the wave loops back to it.
+    html+='<rect x="'+(st.sx-u)+'" y="'+(-st.sy-u)+'" width="'+(u*2)+'" height="'+(u*2)+'" fill="var(--ink)"/>';
     segs.forEach(function(g, i){
       html+='<circle cx="'+g.P[3][0]+'" cy="'+(-g.P[3][1])+'" r="'+(u*0.9)+'" fill="var(--ink)"/>';
       hits+=hit(g.P[3][0], g.P[3][1], i, 'end');
     });
-    hits+=hit(st.sx, st.sy, 0, 'start');
     svg.innerHTML=html+hits;
   }
 

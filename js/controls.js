@@ -1,9 +1,8 @@
 // Section cards, slider/number rows, JSON output and the page buttons.
 (function(D){
   var host = document.getElementById('sections');
-  var startRows = document.getElementById('startrows');
   var out = document.getElementById('out');
-  var FIELDS = D.FIELDS, START_FIELDS = D.START_FIELDS, rnd = D.rnd, clamp = D.clamp;
+  var FIELDS = D.FIELDS, rnd = D.rnd, clamp = D.clamp;
   D.refs = {};
 
   function renderOut(){
@@ -30,8 +29,6 @@
   function refreshAll(){
     D.refitAll();
     D.state.sections.forEach(applyRanges);
-    var st = D.refs['startsy'];  // the first point can move when the locked end does
-    if(st){ st.r.value = D.state.start.sy; if(document.activeElement !== st.n) st.n.value = D.state.start.sy; }
   }
 
   // Set one value from outside its row (used by dragging) and keep the row in sync.
@@ -95,8 +92,7 @@
   }
 
   function render(){
-    host.innerHTML = ''; startRows.innerHTML = ''; D.refs = {};
-    START_FIELDS.forEach(function(f){ startRows.appendChild(buildRow(D.state.start, f)); });
+    host.innerHTML = ''; D.refs = {};
     D.state.sections.forEach(function(s, idx){
       var sec = document.createElement('section');
       sec.className = 'section';
@@ -127,7 +123,7 @@
         sec.appendChild(buildRow(s, f));
         if(f.key === 'ey' && locked){
           var ln = document.createElement('p');
-          ln.className = 'note cardnote'; ln.textContent = 'Linked to the first point, so the wave repeats without a jump. Changing one moves both.';
+          ln.className = 'note cardnote'; ln.textContent = 'Linked to the start square: the wave loops back to the start, so this is also the start’s height.';
           sec.appendChild(ln);
         }
       });

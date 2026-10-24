@@ -188,8 +188,8 @@
     refitAll();
   }
 
-  // One cycle of the wave as N evenly spaced heights. x runs from the first point to the last end, so jumps fall between
-  // samples, and after the last end the wave jumps back to the first point's height to repeat. A Bézier is read by finding
+  // One cycle of the wave as N evenly spaced heights. x runs from the start to the last end, so jumps fall between
+  // samples, and after the last end (at the start's height) the wave carries on from the start again. A Bézier is read by finding
   // the t where x(t) reaches each sample's x, which has exactly one answer because sections never go backwards.
   function sampleCycle(N){
     var geo = sectionGeo(), out = new Float32Array(N), total = 0, i = 0;
