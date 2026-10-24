@@ -3,14 +3,16 @@
 (function(D){
   var N = 2048;  // samples per cycle, the usual size for single-cycle waves
   var ctx = null, master = null, wave = null, dirty = true, pending = false, voices = {}, octave = 4;
-  var SKEY = 'dial-synth-v1', prefs = { freq: 220, vol: 50 };
+  var SKEY = 'dial-synth-v1', prefs = { freq: 220, vol: 50, len: 2 };
   try{ var p = JSON.parse(localStorage.getItem(SKEY)); if(p && p.freq > 0 && p.vol >= 0) prefs = p; }catch(e){}
+  if(!(prefs.len > 0)) prefs.len = 2;
   function savePrefs(){ try{ localStorage.setItem(SKEY, JSON.stringify(prefs)); }catch(e){} }
 
   var playBtn = document.getElementById('play');
   var freqR = document.getElementById('freq-r'), freqN = document.getElementById('freq-n'), noteName = document.getElementById('notename');
   var volR = document.getElementById('vol-r'), volN = document.getElementById('vol-n');
   var octEl = document.getElementById('oct'), midiBtn = document.getElementById('midi'), midiStatus = document.getElementById('midistatus');
+  var lenN = document.getElementById('len-n'), noteBtn = document.getElementById('notewav'), noteStatus = document.getElementById('notestatus');
 
   var NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
   function mtof(m){ return 440 * Math.pow(2, (m - 69) / 12); }
@@ -184,7 +186,44 @@
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
   });
 
+  // A held note as a WAV: the note at the current frequency for the chosen number of seconds, played through the same
+  // oscillator (so centred and smoothed the same way) but rendered straight to a file. It fades in and out over 5 ms so the
+  // clip doesn't click, ignores the volume slider, and is turned down only if its peak would go past full scale.
+  var LEN_MAX = 60;
+  lenN.value = prefs.len;
+  lenN.addEventListener('input', function(){
+    var v = parseFloat(lenN.value);
+    if(v > 0){ prefs.len = Math.min(LEN_MAX, v); savePrefs(); }
+  });
+  lenN.addEventListener('change', function(){ lenN.value = prefs.len; });
+  function renderNote(freq, secs, rate){
+    var n = Math.max(2, Math.round(secs * rate)), c = new OfflineAudioContext(1, n, rate), dur = (n - 1) / rate;  // dur: time of the last sample
+    var osc = c.createOscillator(), g = c.createGain(), fade = Math.min(0.005, dur / 2);
+    osc.setPeriodicWave(buildWave(c)); osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, 0); g.gain.linearRampToValueAtTime(1, fade);
+    g.gain.setValueAtTime(1, dur - fade); g.gain.linearRampToValueAtTime(0, dur);
+    osc.connect(g); g.connect(c.destination); osc.start(0);
+    return c.startRendering().then(function(buf){
+      var y = buf.getChannelData(0), peak = 0, i;
+      for(i = 0; i < y.length; i++) peak = Math.max(peak, Math.abs(y[i]));
+      if(peak > 1) for(i = 0; i < y.length; i++) y[i] /= peak;
+      return { y: y, peak: peak };
+    });
+  }
+  noteBtn.addEventListener('click', function(){
+    var freq = prefs.freq, secs = prefs.len;
+    noteStatus.textContent = 'Making the note…';
+    renderNote(freq, secs, 44100).then(function(r){
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(wavBlob(r.y, 44100));
+      a.download = 'dial-note-' + noteOf(Math.round(69 + 12 * Math.log2(freq / 440))).replace('♯', 's') + '-' + freq + 'Hz-' + secs + 's.wav';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+      noteStatus.textContent = r.peak > 1 ? 'Done. It was turned down so its loudest point fits in the file.' : 'Done.';
+    }, function(){ noteStatus.textContent = 'Sorry, the note couldn’t be made in this browser.'; });
+  });
+
   setFreq(prefs.freq); setVol(prefs.vol);
   // For tests and your own code.
-  D.synth = { start: startVoice, stop: stopVoice, onMidi: onMidi, buildWave: buildWave, wavBlob: wavBlob, playing: function(){ return Object.keys(voices); } };
+  D.synth = { start: startVoice, stop: stopVoice, onMidi: onMidi, buildWave: buildWave, wavBlob: wavBlob, renderNote: renderNote, playing: function(){ return Object.keys(voices); } };
 })(window.Dial = window.Dial || {});

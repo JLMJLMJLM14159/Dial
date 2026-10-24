@@ -23,9 +23,15 @@
     <p class="note">Hold a key to play a note for as long as you hold it: A W S E D F T G Y H U J K O L P ; are piano keys starting from <span id="oct">C4</span>, and Z and X move down and up an octave.</p>
     <div class="row">
       <button type="button" id="midi">Connect MIDI keyboard</button>
-      <button type="button" id="wav">Download cycle (WAV)</button>
     </div>
     <p class="note cardnote" id="midistatus" aria-live="polite"></p>
+    <div class="dial numonly gap"><label for="len-n">Note length (s)</label><input type="number" id="len-n" min="0.01" max="60" step="any"></div>
+    <div class="row">
+      <button type="button" id="wav">Download cycle (WAV)</button>
+      <button type="button" id="notewav">Download note (WAV)</button>
+    </div>
+    <p class="note cardnote" id="notestatus" aria-live="polite"></p>
+    <p class="note">The cycle is one repeat of the shape, exactly as drawn, for loading into a wavetable synth or sampler. The note is the current frequency held for the note length (up to 60 seconds), to drop onto a track in a DAW.</p>
   </section>
 
   <section class="section">

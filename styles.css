@@ -38,7 +38,7 @@ select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .bar{display:flex;gap:10px;align-items:center;margin:20px 0 6px}
 .fitnote{margin:0 0 28px}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0 8px}
-.dial label[for=freq-n],.dial label[for=vol-n]{line-height:1.25}
+.dial label[for=freq-n],.dial label[for=vol-n],.dial label[for=len-n]{line-height:1.25}
 #notename{margin:-2px 0 4px 108px}
 @media (max-width:480px){#notename{margin-left:90px}}
 .out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
