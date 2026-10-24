@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dial sections</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <h1>Dial sections</h1>
+  <p class="lede">Each section is one Bézier curve, and the sections join end to start in order. Values are recorded as you go and kept in this browser.</p>
+
+  <svg id="preview" role="img" aria-label="Preview of the joined curves"></svg>
+  <p class="note previewnote">Drag any dot to edit it. Hollow dots are the Bézier handles and dark dots mark where sections join. The first point only moves up and down, with a dark line joining it to the middle line. The square at the end sits at the same height as the first point, joined to the last endpoint by a dark line. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
+
+  <section class="section">
+    <div class="head"><h2>First point</h2></div>
+    <p class="note cardnote">Move it up or down to add a straight line from the middle line. It can’t move sideways.</p>
+    <div id="startrows"></div>
+  </section>
+
+  <div id="sections"></div>
+
+  <div class="bar"><button class="primary" id="add" type="button">Add section</button></div>
+
+  <div class="out-head">
+    <h2>Recorded values</h2>
+    <div>
+      <button type="button" id="copy">Copy JSON</button>
+      <button type="button" id="reset">Reset all</button>
+    </div>
+  </div>
+  <pre id="out" aria-live="polite"></pre>
+  <p class="note">In your own code, call <code>getDialValues()</code> to get this same data. Length can be any number from 0 up. Length and handle x are measured from the section’s start, and handle x can sit from one length behind the start to two lengths ahead (at least 1 either way). Every y value (First point, End y and the handles) is the height above or below the middle line, from −1 to 1, which keeps the whole curve inside that band.</p>
+</main>
+
+<!-- Plain scripts (not modules) so the page still works when opened straight from disk. They share the window.Dial namespace and must load in this order. -->
+<script src="js/state.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/controls.js"></script>
+<script src="js/drag.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
