@@ -7,14 +7,19 @@
   // 5 is as far as a handle's height can ever go with the curve still inside -1..1: heights -1, 5, -5, 1 (and mirrored)
   // give the cubic Chebyshev curve, which touches -1 and 1 four times.
   var HYT = 5, NT = function(){ return -HYT; }, PT = function(){ return HYT; };
+  // Each section has a type. Sine, flat and jump sections have no handles and can never go backwards or leave -1..1.
+  var TYPES = [ { key:'bezier', label:'Bézier' }, { key:'sine', label:'Sine' }, { key:'flat', label:'Flat' }, { key:'jump', label:'Jump' } ];
+  var SMOOTHS = [ { key:'both', label:'Both ends' }, { key:'end', label:'End only' }, { key:'start', label:'Start only' } ];
+  var HAS = function(list, key){ return list.some(function(o){ return o.key === key; }); };
   // Handle fields have a fixed slider track (tlo..thi) but a narrower allowed range (lo..hi) that depends on the rest of the section.
+  // types lists the section types that show the field.
   var FIELDS = [
-    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true },
-    { key:'ey',     label:'End y',      lo:N1,  hi:P1 },
-    { key:'h1x',    label:'Handle 1 x', lo:HX('h1x', 0), hi:HX('h1x', 1), tlo:function(){ return 0; }, thi:function(s){ return 4 * s.length / 3; }, hx:true, gap:true },
-    { key:'h1y',    label:'Handle 1 y', lo:HY('h1y', 0), hi:HY('h1y', 1), tlo:NT, thi:PT, hy:true },
-    { key:'h2x',    label:'Handle 2 x', lo:HX('h2x', 0), hi:HX('h2x', 1), tlo:function(s){ return -s.length / 3; }, thi:function(s){ return s.length; }, hx:true, gap:true },
-    { key:'h2y',    label:'Handle 2 y', lo:HY('h2y', 0), hi:HY('h2y', 1), tlo:NT, thi:PT, hy:true }
+    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true, types:['bezier', 'sine', 'flat'] },
+    { key:'ey',     label:'End y',      lo:N1,  hi:P1, types:['bezier', 'sine', 'jump'] },
+    { key:'h1x',    label:'Handle 1 x', lo:HX('h1x', 0), hi:HX('h1x', 1), tlo:function(){ return 0; }, thi:function(s){ return 4 * s.length / 3; }, hx:true, gap:true, types:['bezier'] },
+    { key:'h1y',    label:'Handle 1 y', lo:HY('h1y', 0), hi:HY('h1y', 1), tlo:NT, thi:PT, hy:true, types:['bezier'] },
+    { key:'h2x',    label:'Handle 2 x', lo:HX('h2x', 0), hi:HX('h2x', 1), tlo:function(s){ return -s.length / 3; }, thi:function(s){ return s.length; }, hx:true, gap:true, types:['bezier'] },
+    { key:'h2y',    label:'Handle 2 y', lo:HY('h2y', 0), hi:HY('h2y', 1), tlo:NT, thi:PT, hy:true, types:['bezier'] }
   ];
   var START_FIELDS = [ { key:'sy', label:'Start y', lo:N1, hi:P1 } ];
   var BYKEY = {};
@@ -107,14 +112,49 @@
     s.h1y = rnd(r1); s.h2y = rnd(r2);
   }
   // Re-check every section after any change: a section's start height is the previous section's end height.
+  // A jump always has length 0 and a flat section always ends at its start height.
   function refitAll(){
     var y = D.state.start.sy;
-    D.state.sections.forEach(function(s){ fitHandles(s); fitY(s, y); y = s.ey; });
+    D.state.sections.forEach(function(s){
+      if(s.type === 'jump') s.length = 0;
+      if(s.type === 'flat') s.ey = y;
+      fitHandles(s); fitY(s, y); y = s.ey;
+    });
+  }
+
+  // Height along a sine or flat section, u = 0..1 across its length. The sine shapes are parts of a sine wave stretched
+  // between the start and end heights (half a cycle, or a quarter that is smooth at one end), so chained ones give an exact sine.
+  function shapeY(s, y0, u){
+    var k;
+    if(s.type === 'flat') return y0;
+    if(s.smooth === 'end') k = Math.sin(Math.PI * u / 2);
+    else if(s.smooth === 'start') k = 1 - Math.cos(Math.PI * u / 2);
+    else k = (1 - Math.cos(Math.PI * u)) / 2;
+    return y0 + (s.ey - y0) * k;
+  }
+  // Handles that make a Bézier copy the section's current shape, used when switching a section to Bézier.
+  // The sine ones are the closest cubic fits (within about 0.0002 of the height change); the rest are a straight line.
+  function matchHandles(s, y0){
+    var L = s.length, dy = s.ey - y0, a = 0.326, b = 0.638, k = 0.36435, h;
+    if(s.type === 'sine' && s.smooth === 'both') h = [k, 0, 1 - k, 1];
+    else if(s.type === 'sine' && s.smooth === 'end') h = [a, a * Math.PI / 2, b, 1];
+    else if(s.type === 'sine') h = [1 - b, 0, 1 - a, 1 - a * Math.PI / 2];
+    else h = [1 / 3, 1 / 3, 2 / 3, 2 / 3];
+    s.h1x = rnd(h[0] * L); s.h1y = rnd(y0 + h[1] * dy); s.h2x = rnd(h[2] * L); s.h2y = rnd(y0 + h[3] * dy);
+  }
+  // A jump remembers the length it had, so switching back restores it.
+  function setType(s, type){
+    if(s.type === type) return;
+    if(type === 'jump') s.lastLength = s.length;
+    else if(s.type === 'jump') s.length = s.lastLength > 0 ? s.lastLength : 5;
+    if(type === 'bezier') matchHandles(s, startYOf(s));
+    s.type = type;
+    refitAll();
   }
 
   function blank(y0){
     var y = y0 ? rnd(clamp(y0, -1, 1)) : 0, L = 5;
-    return { id: Date.now() + '-' + Math.floor(Math.random() * 1e5), length: L, ey: y, h1x: rnd(L / 3), h1y: y, h2x: rnd(2 * L / 3), h2y: y };
+    return { id: Date.now() + '-' + Math.floor(Math.random() * 1e5), type: 'bezier', smooth: 'both', length: L, ey: y, h1x: rnd(L / 3), h1y: y, h2x: rnd(2 * L / 3), h2y: y };
   }
   function clampAll(){
     var state = D.state;
@@ -127,7 +167,12 @@
   function load(){
     try{
       var s = JSON.parse(localStorage.getItem(KEY));
-      if(s && Array.isArray(s.sections)) s.sections.forEach(function(x){ if(x && typeof x.ey !== 'number') x.ey = 0; });
+      if(s && Array.isArray(s.sections)) s.sections.forEach(function(x){
+        if(!x) return;
+        if(typeof x.ey !== 'number') x.ey = 0;
+        if(!HAS(TYPES, x.type)) x.type = 'bezier';
+        if(!HAS(SMOOTHS, x.smooth)) x.smooth = 'both';
+      });
       if(s && Array.isArray(s.sections) && s.sections.length &&
          s.sections.every(function(x){ return FIELDS.every(function(f){ return typeof x[f.key] === 'number'; }); })){
         if(!s.start || typeof s.start.sy !== 'number') s.start = { sx:0, sy:0 };
@@ -149,11 +194,13 @@
     return {
       start: { y: state.start.sy },
       sections: state.sections.map(function(s, i){
-        return {
-          section: i + 1, length: s.length, end: { y: s.ey },
-          handle1: { x: s.h1x, y: s.h1y },
-          handle2: { x: s.h2x, y: s.h2y }
-        };
+        // Only what the type uses: a jump has no length, a flat section's end height is its start height.
+        var o = { section: i + 1, type: s.type };
+        if(s.type !== 'jump') o.length = s.length;
+        if(s.type !== 'flat') o.end = { y: s.ey };
+        if(s.type === 'sine') o.smooth = s.smooth;
+        if(s.type === 'bezier'){ o.handle1 = { x: s.h1x, y: s.h1y }; o.handle2 = { x: s.h2x, y: s.h2y }; }
+        return o;
       })
     };
   }
@@ -162,13 +209,14 @@
   function sectionGeo(){
     var X = D.state.start.sx, Y = D.state.start.sy, res = [];
     D.state.sections.forEach(function(s){
-      res.push({ X:X, Y:Y, P:[[X,Y], [X+s.h1x,s.h1y], [X+s.h2x,s.h2y], [X+s.length, s.ey]] });
+      res.push({ s:s, X:X, Y:Y, P:[[X,Y], [X+s.h1x,s.h1y], [X+s.h2x,s.h2y], [X+s.length, s.ey]] });
       X += s.length; Y = s.ey;
     });
     return res;
   }
 
-  D.FIELDS = FIELDS; D.START_FIELDS = START_FIELDS; D.BYKEY = BYKEY;
+  D.FIELDS = FIELDS; D.START_FIELDS = START_FIELDS; D.BYKEY = BYKEY; D.TYPES = TYPES; D.SMOOTHS = SMOOTHS;
+  D.shapeY = shapeY; D.setType = setType;
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
   D.snapshot = snapshot; D.sectionGeo = sectionGeo;

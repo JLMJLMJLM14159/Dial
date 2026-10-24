@@ -6,7 +6,7 @@
 
   function drawPreview(){
     var segs = D.sectionGeo(), st = D.state.start, pts = [[0,0],[0,1],[0,-1],[st.sx,st.sy]];
-    segs.forEach(function(g){ g.P.forEach(function(p){ pts.push(p); }); });
+    segs.forEach(function(g){ (g.s.type === 'bezier' ? g.P : [g.P[0], g.P[3]]).forEach(function(p){ pts.push(p); }); });
     var minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
     pts.forEach(function(p){
       minX=Math.min(minX,p[0]); maxX=Math.max(maxX,p[0]);
@@ -24,8 +24,12 @@
     [1,-1].forEach(function(yy){ html+='<line x1="'+x1+'" y1="'+(-yy)+'" x2="'+x2+'" y2="'+(-yy)+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 4"'+ne+'/>'; });
     html+='<line x1="0" y1="0" x2="'+st.sx+'" y2="'+(-st.sy)+'" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"'+ne+'/>';
     segs.forEach(function(g, i){
-      var P=g.P, c = i % 2 ? 'var(--c2)' : 'var(--c1)';
-      html+='<path d="M'+P[0][0]+' '+(-P[0][1])+' C'+P[1][0]+' '+(-P[1][1])+' '+P[2][0]+' '+(-P[2][1])+' '+P[3][0]+' '+(-P[3][1])+'" fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round"'+ne+'/>';
+      var P=g.P, s=g.s, c = i % 2 ? 'var(--c2)' : 'var(--c1)', d = 'M'+P[0][0]+' '+(-P[0][1]);
+      if(s.type === 'bezier') d += ' C'+P[1][0]+' '+(-P[1][1])+' '+P[2][0]+' '+(-P[2][1])+' '+P[3][0]+' '+(-P[3][1]);
+      else if(s.type === 'sine'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + s.length * k / 64)+' '+(-D.shapeY(s, g.Y, k / 64)); }
+      else d += ' L'+P[3][0]+' '+(-P[3][1]);
+      html+='<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"'+ne+'/>';
+      if(s.type !== 'bezier') return;
       [[P[0],P[1]],[P[3],P[2]]].forEach(function(l){
         html+='<line x1="'+l[0][0]+'" y1="'+(-l[0][1])+'" x2="'+l[1][0]+'" y2="'+(-l[1][1])+'" stroke="'+c+'" stroke-width="1" stroke-dasharray="4 3" opacity=".6"'+ne+'/>';
       });

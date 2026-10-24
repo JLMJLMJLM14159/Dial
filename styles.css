@@ -32,6 +32,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 input[type=range]{width:100%;height:28px;background:transparent;accent-color:var(--accent);margin:0}
 input[type=number]{font:inherit;font-variant-numeric:tabular-nums;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;width:100%;text-align:right}
 input[type=number]:focus{outline:2px solid var(--accent);outline-offset:1px}
+select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer}
+select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.dial.choice{grid-template-columns:96px minmax(0,220px)}
 .bar{display:flex;gap:10px;align-items:center;margin:20px 0 28px}
 .out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .out-head h2{font-size:1.05rem;margin:0}

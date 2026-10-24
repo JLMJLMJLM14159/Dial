@@ -76,6 +76,19 @@
     return row;
   }
 
+  // A drop-down (section type, or which end of a sine is smooth).
+  function buildSelect(id, label, options, value, onchange){
+    var sel = document.createElement('select');
+    sel.id = id; sel.setAttribute('aria-label', label);
+    options.forEach(function(o){
+      var op = document.createElement('option'); op.value = o.key; op.textContent = o.label;
+      sel.appendChild(op);
+    });
+    sel.value = value;
+    sel.addEventListener('change', function(){ onchange(sel.value); });
+    return sel;
+  }
+
   function render(){
     host.innerHTML = ''; startRows.innerHTML = ''; D.refs = {};
     START_FIELDS.forEach(function(f){ startRows.appendChild(buildRow(D.state.start, f)); });
@@ -88,6 +101,11 @@
       var h = document.createElement('h2');
       h.textContent = 'Section ' + (idx + 1);
       head.appendChild(h);
+      var typeId = 't-' + s.id;
+      head.appendChild(buildSelect(typeId, 'Section ' + (idx + 1) + ' type', D.TYPES, s.type, function(v){
+        D.setType(s, v); D.save(); render();
+        document.getElementById(typeId).focus();
+      }));
       if(D.state.sections.length > 1){
         var rm = document.createElement('button');
         rm.type = 'button'; rm.className = 'remove'; rm.textContent = 'Remove';
@@ -98,7 +116,14 @@
         head.appendChild(rm);
       }
       sec.appendChild(head);
-      FIELDS.forEach(function(f){ sec.appendChild(buildRow(s, f)); });
+      FIELDS.forEach(function(f){ if(f.types.indexOf(s.type) >= 0) sec.appendChild(buildRow(s, f)); });
+      if(s.type === 'sine'){
+        var row = document.createElement('div'), l = document.createElement('label'), smId = 's-' + s.id;
+        row.className = 'dial choice'; l.htmlFor = smId; l.textContent = 'Smooth at';
+        row.appendChild(l);
+        row.appendChild(buildSelect(smId, 'Smooth at', D.SMOOTHS, s.smooth, function(v){ s.smooth = v; D.save(); renderOut(); }));
+        sec.appendChild(row);
+      }
       host.appendChild(sec);
     });
     renderOut();
