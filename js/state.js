@@ -92,7 +92,7 @@
   function snapshot(){
     var state = D.state;
     return {
-      start: { x: state.start.sx, y: state.start.sy },
+      start: { y: state.start.sy },
       sections: state.sections.map(function(s, i){
         return {
           section: i + 1, length: s.length, end: { x: s.length, y: s.ey },
