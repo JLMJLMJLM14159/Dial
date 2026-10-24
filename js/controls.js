@@ -11,13 +11,13 @@
     D.drawPreview();
   }
 
-  // Handle x ranges depend on the section's length, so refresh them in place when it changes.
+  // Slider tracks follow the length and each handle's allowed x depends on the other, so refresh them in place.
   function applyRanges(obj){
     FIELDS.forEach(function(f){
       if(f.num) return;
       var ref = D.refs[obj.id + f.key]; if(!ref) return;
-      var lo = f.lo(obj), hi = f.hi(obj);
-      ref.r.min = lo; ref.r.max = hi; ref.r.step = (hi - lo) / 1000 || 'any';
+      var lo = f.lo(obj), hi = f.hi(obj), tlo = (f.tlo || f.lo)(obj), thi = (f.thi || f.hi)(obj);
+      ref.r.min = tlo; ref.r.max = thi; ref.r.step = (thi - tlo) / 1000 || 'any';
       ref.n.min = lo; ref.n.max = hi;
       obj[f.key] = rnd(clamp(obj[f.key], lo, hi));
       ref.r.value = obj[f.key]; ref.n.value = obj[f.key];
@@ -30,11 +30,12 @@
     obj[key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
     var ref = D.refs[obj.id + key];
     if(ref){ if(ref.r) ref.r.value = obj[key]; ref.n.value = obj[key]; }
-    if(key === 'length') applyRanges(obj);
+    if(key === 'length') D.fitHandles(obj);
+    if(key === 'length' || f.hx) applyRanges(obj);
   }
 
   function buildRow(obj, f){
-    var lo = f.lo(obj), hi = f.hi(obj);
+    var lo = f.lo(obj), hi = f.hi(obj), tlo = (f.tlo || f.lo)(obj), thi = (f.thi || f.hi)(obj);
     var id = 'f-' + obj.id + '-' + f.key;
     var row = document.createElement('div');
     row.className = 'dial' + (f.gap ? ' gap' : '') + (f.num ? ' numonly' : '');
@@ -44,7 +45,7 @@
     var r = null;
     if(!f.num){
       r = document.createElement('input');
-      r.type = 'range'; r.min = lo; r.max = hi; r.step = (hi - lo) / 1000 || 'any'; r.value = obj[f.key];
+      r.type = 'range'; r.min = tlo; r.max = thi; r.step = (thi - tlo) / 1000 || 'any'; r.value = obj[f.key];
       r.setAttribute('aria-label', f.label + ' slider');
     }
     var n = document.createElement('input');
@@ -53,7 +54,8 @@
     function commit(v){
       obj[f.key] = rnd(clamp(v, f.lo(obj), f.hi(obj)));
       if(r) r.value = obj[f.key];
-      if(f.key === 'length') applyRanges(obj);
+      if(f.key === 'length') D.fitHandles(obj);
+      if(f.key === 'length' || f.hx) applyRanges(obj);
       D.save(); renderOut();
     }
     if(r) r.addEventListener('input', function(){ commit(parseFloat(r.value)); n.value = obj[f.key]; });
