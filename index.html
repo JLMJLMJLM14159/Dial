@@ -62,8 +62,8 @@
 
   <div id="sections"></div>
 
-  <div class="bar"><button class="primary" id="add" type="button">Add section</button><button type="button" id="fit">Scale to fit</button></div>
-  <p class="note fitnote">Scale to fit moves the wave so the start square sits on the middle line, then makes it as large as fits between −1 and 1, without changing its shape.</p>
+  <div class="bar"><button class="primary" id="add" type="button">Add section</button><button type="button" id="fit">Scale to fit</button><button type="button" id="undo" title="Undo (Ctrl+Z, ⌘Z on a Mac)" disabled>Undo</button><button type="button" id="redo" title="Redo (Ctrl+Y or Ctrl+Shift+Z, ⌘⇧Z on a Mac)" disabled>Redo</button></div>
+  <p class="note fitnote">Undo and Redo also work with Ctrl+Z and Ctrl+Y (⌘Z and ⌘⇧Z on a Mac). Scale to fit moves the wave so the start square sits on the middle line, then makes it as large as fits between −1 and 1, without changing its shape.</p>
 
   <div class="out-head">
     <h2>Recorded values</h2>
@@ -82,6 +82,7 @@
 <script src="js/drag.js"></script>
 <script src="js/synth.js"></script>
 <script src="js/files.js"></script>
+<script src="js/history.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

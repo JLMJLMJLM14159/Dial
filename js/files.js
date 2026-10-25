@@ -19,7 +19,7 @@
     if(typeof D.state.savedAs !== 'string') markSaved();  // first visit, or saved before this existed
     D.showUnsaved();
   };
-  nameIn.addEventListener('input', function(){ D.state.name = nameIn.value; D.save(); D.showUnsaved(); });
+  nameIn.addEventListener('input', function(){ D.state.name = nameIn.value; D.save(); D.showUnsaved(); D.noteChange(); });
 
   // Ask what to do about unsaved changes before replacing the wave: 'save', 'discard' or 'cancel'.
   // With nothing unsaved there's nothing to ask.
@@ -70,7 +70,7 @@
       if(!st.name) st.name = file.name.replace(/(\.dial)?\.json$/i, '');
       afterAsking('open “' + st.name + '”', function(saved){
         var r = D.loadWave(st);
-        D.save(); D.render(); nameIn.value = D.state.name || ''; D.showUnsaved();
+        D.save(); D.render(); nameIn.value = D.state.name || ''; D.showUnsaved(); D.resetHistory();
         status.textContent = 'Opened “' + D.state.name + '”.' + saved +
           (r.adjusted ? ' Some values were adjusted to fit the editor’s rules.' : '') +
           (r.newer ? ' It was saved by a newer version of this page, so some parts may be missing.' : '');
@@ -84,7 +84,7 @@
     afterAsking('start a new wave', function(saved){
       D.state = D.newState();
       D.state.sections.push(D.blank());
-      D.render(); nameIn.value = ''; markSaved();
+      D.render(); nameIn.value = ''; markSaved(); D.resetHistory();
       status.textContent = 'Started a new wave.' + saved;
     });
   });

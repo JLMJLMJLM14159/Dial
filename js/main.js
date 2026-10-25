@@ -4,4 +4,5 @@
   D.load();
   D.render();
   D.initFiles();
+  D.resetHistory();
 })(window.Dial = window.Dial || {});
