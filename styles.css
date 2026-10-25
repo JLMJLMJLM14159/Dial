@@ -69,7 +69,6 @@ button:disabled:hover{border-color:var(--line)}
 button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .primary:hover{border-color:var(--accent);filter:brightness(1.08)}
-.remove{padding:4px 10px;color:var(--muted);font-size:.9rem}
 .dial{display:grid;grid-template-columns:96px 1fr 88px;align-items:center;gap:12px;padding:6px 0}
 .dial.numonly{grid-template-columns:96px 130px}
 .dial.gap{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}

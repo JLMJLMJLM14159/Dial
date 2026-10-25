@@ -46,18 +46,23 @@
       <div class="strip">
         <div class="strip-secs" id="strip" role="group" aria-label="Sections"></div>
         <button type="button" id="add" title="Add a section at the end">+ Add section</button>
+        <button type="button" id="remove" title="Remove the selected section">− Remove section</button>
         <button type="button" id="fit" title="Put the start on the middle line and make the wave as large as fits">Scale to fit</button>
       </div>
     </div>
     <div class="inspector" id="sections"></div>
   </div>
 
-  <details class="panel" id="panel-export">
-    <summary>Keyboard, MIDI and export</summary>
+  <details class="panel" id="panel-keys">
+    <summary>Keyboard and MIDI</summary>
     <p class="note">Hold a key to play a note for as long as you hold it: A W S E D F T G Y H U J K O L P ; are piano keys starting from <span id="oct">C4</span>, and Z and X move down and up an octave.</p>
     <div class="row"><button type="button" id="midi">Connect MIDI keyboard</button></div>
     <p class="note cardnote" id="midistatus" aria-live="polite"></p>
-    <div class="dial numonly gap"><label for="len-n">Note length (s)</label><input type="number" id="len-n" min="0.01" max="60" step="any"></div>
+  </details>
+
+  <details class="panel" id="panel-export">
+    <summary>Export</summary>
+    <div class="dial numonly"><label for="len-n">Note length (s)</label><input type="number" id="len-n" min="0.01" max="60" step="any"></div>
     <div class="row">
       <button type="button" id="wav">Download cycle (WAV)</button>
       <button type="button" id="notewav">Download note (WAV)</button>

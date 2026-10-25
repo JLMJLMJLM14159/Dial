@@ -1,6 +1,7 @@
 // Section cards, slider/number rows, JSON output and the page buttons.
 (function(D){
   var host = document.getElementById('sections'), strip = document.getElementById('strip');
+  var removeBtn = document.getElementById('remove');
   var out = document.getElementById('out');
   var FIELDS = D.FIELDS, rnd = D.rnd, clamp = D.clamp;
   D.refs = {};
@@ -124,6 +125,7 @@
     host.innerHTML = ''; D.refs = {};
     var idx = selIndex(), s = D.state.sections[idx];
     buildStrip(idx);
+    removeBtn.disabled = D.state.sections.length < 2;
     var sec = document.createElement('section');
     sec.className = 'section';
 
@@ -137,16 +139,6 @@
       D.setType(s, v); D.save(); render();
       document.getElementById(typeId).focus();
     }));
-    if(D.state.sections.length > 1){
-      var rm = document.createElement('button');
-      rm.type = 'button'; rm.className = 'remove'; rm.textContent = 'Remove';
-      rm.addEventListener('click', function(){
-        D.state.sections = D.state.sections.filter(function(x){ return x.id !== s.id; });
-        D.selId = null; D.selIdx = Math.min(idx, D.state.sections.length - 1);  // select the next one along
-        D.refitAll(); D.save(); render();
-      });
-      head.appendChild(rm);
-    }
     sec.appendChild(head);
     var locked = s === D.lockSection();
     FIELDS.forEach(function(f){
@@ -174,6 +166,14 @@
     var s = D.blank(prev ? prev.ey : D.state.start.sy);
     D.state.sections.push(s); D.selId = s.id;  // the new section is selected for editing
     D.save(); render();
+  });
+  // Remove the selected section (there's always at least one), then select the next one along.
+  removeBtn.addEventListener('click', function(){
+    var list = D.state.sections, idx = selIndex();
+    if(list.length < 2) return;
+    D.state.sections = list.filter(function(x, i){ return i !== idx; });
+    D.selId = null; D.selIdx = Math.min(idx, D.state.sections.length - 1);
+    D.refitAll(); D.save(); render();
   });
   document.getElementById('fit').addEventListener('click', function(){
     D.scaleToFit();
