@@ -29,7 +29,7 @@
     segs.forEach(function(g, i){
       var P=g.P, s=g.s, c = i % 2 ? 'var(--c2)' : 'var(--c1)', d = 'M'+P[0][0]+' '+(-P[0][1]);
       if(s.type === 'bezier') d += ' C'+P[1][0]+' '+(-P[1][1])+' '+P[2][0]+' '+(-P[2][1])+' '+P[3][0]+' '+(-P[3][1]);
-      else if(s.type === 'sine'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + s.length * k / 64)+' '+(-D.shapeY(s, g.Y, k / 64)); }
+      else if(s.type === 'sine' || s.type === 'curve'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + s.length * k / 64)+' '+(-D.shapeY(s, g.Y, k / 64)); }
       else d += ' L'+P[3][0]+' '+(-P[3][1]);
       var on = i === sel;
       html+='<path d="'+d+'" fill="none" stroke="'+c+'" stroke-width="'+(on ? 3.5 : 2.5)+'" stroke-linecap="round" stroke-linejoin="round"'+(on ? '' : ' opacity=".45"')+ne+'/>';

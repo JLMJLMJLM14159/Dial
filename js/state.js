@@ -7,17 +7,20 @@
   // 5 is as far as a handle's height can ever go with the curve still inside -1..1: heights -1, 5, -5, 1 (and mirrored)
   // give the cubic Chebyshev curve, which touches -1 and 1 four times.
   var HYT = 5, NT = function(){ return -HYT; }, PT = function(){ return HYT; };
-  // Each section has a type. Sine and line sections have no handles and can never go backwards or leave -1..1.
+  var BEND = 20;  // a curve's bend runs from -20 to 20; at the ends it is nearly a corner
+  // Each section has a type. Sine, line and curve sections have no handles and can never go backwards or leave -1..1.
   // A line can be level (end y = start y) or an instant jump (length 0); older waves' Flat and Jump sections become lines.
-  var TYPES = [ { key:'bezier', label:'Bézier' }, { key:'sine', label:'Sine' }, { key:'line', label:'Line' } ];
+  // A curve is a line with a bend: an exponential from start to end (see shapeY).
+  var TYPES = [ { key:'bezier', label:'Bézier' }, { key:'sine', label:'Sine' }, { key:'line', label:'Line' }, { key:'curve', label:'Curve' } ];
   var OLD_TYPES = { flat: 'line', jump: 'line' };
   var SMOOTHS = [ { key:'both', label:'Both ends' }, { key:'end', label:'End only' }, { key:'start', label:'Start only' } ];
   var HAS = function(list, key){ return list.some(function(o){ return o.key === key; }); };
   // Handle fields have a fixed slider track (tlo..thi) but a narrower allowed range (lo..hi) that depends on the rest of the section.
   // types lists the section types that show the field.
   var FIELDS = [
-    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true, types:['bezier', 'sine', 'line'] },
-    { key:'ey',     label:'End y',      lo:N1,  hi:P1, types:['bezier', 'sine', 'line'] },
+    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true, types:['bezier', 'sine', 'line', 'curve'] },
+    { key:'ey',     label:'End y',      lo:N1,  hi:P1, types:['bezier', 'sine', 'line', 'curve'] },
+    { key:'bend',   label:'Bend',       lo:function(){ return -BEND; }, hi:function(){ return BEND; }, types:['curve'] },
     { key:'h1x',    label:'Handle 1 x', lo:HX('h1x', 0), hi:HX('h1x', 1), tlo:function(){ return 0; }, thi:function(s){ return 4 * s.length / 3; }, hx:true, gap:true, types:['bezier'] },
     { key:'h1y',    label:'Handle 1 y', lo:HY('h1y', 0), hi:HY('h1y', 1), tlo:NT, thi:PT, hy:true, types:['bezier'] },
     { key:'h2x',    label:'Handle 2 x', lo:HX('h2x', 0), hi:HX('h2x', 1), tlo:function(s){ return -s.length / 3; }, thi:function(s){ return s.length; }, hx:true, gap:true, types:['bezier'] },
@@ -138,21 +141,41 @@
 
   // Height along a sine or line section, u = 0..1 across its length. The sine shapes are parts of a sine wave stretched
   // between the start and end heights (half a cycle, or a quarter that is smooth at one end), so chained ones give an exact sine.
+  // A curve with bend b follows (1 - e^(-b·u)) / (1 - e^(-b)): b > 0 moves fast at first and levels off into the end (like a
+  // decay or a charging curve), b < 0 starts slowly and speeds up, b = 0 is straight. Heights 1 to e^-4 with b = 4 give
+  // exactly e^(-4x).
+  function curveK(b, u){ return Math.abs(b) < 1e-9 ? u : (1 - Math.exp(-b * u)) / (1 - Math.exp(-b)); }
   function shapeY(s, y0, u){
     var k;
     if(s.type === 'line') k = u;
+    else if(s.type === 'curve') k = curveK(s.bend, u);
     else if(s.smooth === 'end') k = Math.sin(Math.PI * u / 2);
     else if(s.smooth === 'start') k = 1 - Math.cos(Math.PI * u / 2);
     else k = (1 - Math.cos(Math.PI * u)) / 2;
     return y0 + (s.ey - y0) * k;
   }
   // Handles that make a Bézier copy the section's current shape, used when switching a section to Bézier.
-  // The sine ones are the closest cubic fits (within about 0.0002 of the height change); the rest are a straight line.
+  // The sine ones are the closest cubic fits (within about 0.0002 of the height change), curves get their best fit, and lines
+  // are a straight line.
   function matchHandles(s, y0){
     var L = s.length, dy = s.ey - y0, a = 0.326, b = 0.638, k = 0.36435, h;
     if(s.type === 'sine' && s.smooth === 'both') h = [k, 0, 1 - k, 1];
     else if(s.type === 'sine' && s.smooth === 'end') h = [a, a * Math.PI / 2, b, 1];
     else if(s.type === 'sine') h = [1 - b, 0, 1 - a, 1 - a * Math.PI / 2];
+    else if(s.type === 'curve' && Math.abs(s.bend) > 1e-9){
+      // Handles in the curve's starting and ending directions, with the lengths (as fractions of the section, kept to ones
+      // that can't go backwards) that follow the curve most closely.
+      var e = Math.exp(-s.bend), d0 = s.bend / (1 - e), d1 = d0 * e, best = Infinity;
+      for(var A = 0.02; A <= 1.33; A += 0.02) for(var B = 0.02; B <= 1.33; B += 0.02){
+        if(A + B - Math.sqrt(A * B) > 1) continue;
+        var c = [A, A * d0, 1 - B, 1 - B * d1], w = 0;
+        for(var i = 1; i < 100 && w < best; i++){
+          var t = i / 100, v = 1 - t, x = 3 * v * v * t * c[0] + 3 * v * t * t * c[2] + t * t * t;
+          w = Math.max(w, Math.abs(3 * v * v * t * c[1] + 3 * v * t * t * c[3] + t * t * t - curveK(s.bend, x)));
+        }
+        if(w < best){ best = w; h = c; }
+      }
+    }
     else h = [1 / 3, 1 / 3, 2 / 3, 2 / 3];
     s.h1x = rnd(h[0] * L); s.h1y = rnd(y0 + h[1] * dy); s.h2x = rnd(h[2] * L); s.h2y = rnd(y0 + h[3] * dy);
   }
@@ -206,7 +229,7 @@
 
   function blank(y0){
     var y = y0 ? rnd(clamp(y0, -1, 1)) : 0, L = 5;
-    return { id: Date.now() + '-' + Math.floor(Math.random() * 1e5), type: 'bezier', smooth: 'both', length: L, ey: y, h1x: rnd(L / 3), h1y: y, h2x: rnd(2 * L / 3), h2y: y };
+    return { id: Date.now() + '-' + Math.floor(Math.random() * 1e5), type: 'bezier', smooth: 'both', bend: 0, length: L, ey: y, h1x: rnd(L / 3), h1y: y, h2x: rnd(2 * L / 3), h2y: y };
   }
   function clampAll(){
     var state = D.state;
@@ -222,6 +245,7 @@
       if(s && Array.isArray(s.sections)) s.sections.forEach(function(x){
         if(!x) return;
         if(typeof x.ey !== 'number') x.ey = 0;
+        if(typeof x.bend !== 'number') x.bend = 0;  // saved before curves existed
         if(OLD_TYPES[x.type]) x.type = OLD_TYPES[x.type];  // a Flat already ends at its start height, a Jump has length 0
         if(!HAS(TYPES, x.type)) x.type = 'bezier';
         if(!HAS(SMOOTHS, x.smooth)) x.smooth = 'both';
@@ -249,6 +273,7 @@
       sections: state.sections.map(function(s, i){
         // Only what the type uses.
         var o = { section: i + 1, type: s.type, length: s.length, end: { y: s.ey } };
+        if(s.type === 'curve') o.bend = s.bend;
         if(s.type === 'sine') o.smooth = s.smooth;
         if(s.type === 'bezier'){ o.handle1 = { x: s.h1x, y: s.h1y }; o.handle2 = { x: s.h2x, y: s.h2y }; }
         return o;
@@ -258,8 +283,8 @@
 
   // A saved wave file: the recorded values with a format name, version and the wave's name, so it can be recognised,
   // opened again and shared. A later version can add fields without breaking old files. Version 2 replaced the Flat and
-  // Jump types with Line (version 1 files still open: their Flat and Jump sections become lines).
-  var FORMAT = 'dial-wave', VERSION = 2;
+  // Jump types with Line (version 1 files still open: their Flat and Jump sections become lines); version 3 added Curve.
+  var FORMAT = 'dial-wave', VERSION = 3;
   function fileData(){
     var snap = snapshot();
     return { format: FORMAT, version: VERSION, name: D.state.name || '', start: snap.start, sections: snap.sections };
@@ -279,6 +304,7 @@
       s.id += '-' + i; s.type = type; s.smooth = HAS(SMOOTHS, f.smooth) ? f.smooth : 'both';
       s.length = f.type === 'jump' ? 0 : num(f.length, 5);
       s.ey = f.type === 'flat' ? y : num(f.end && f.end.y, y);
+      s.bend = num(f.bend, 0);
       if(type === 'bezier'){
         s.h1x = num(f.handle1 && f.handle1.x, s.length / 3); s.h1y = num(f.handle1 && f.handle1.y, y);
         s.h2x = num(f.handle2 && f.handle2.x, 2 * s.length / 3); s.h2y = num(f.handle2 && f.handle2.y, s.ey);
