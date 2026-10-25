@@ -57,7 +57,7 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 
 - **Toolbar:**
   - The wave's name, with a `*` while there are unsaved changes (also shown in the browser tab).
-  - Save, Open, New.
+  - Save, Open, **Presets** (Sine, Saw, Triangle or Square to start from), New.
   - Undo and Redo.
   - Play, Frequency (slider from 20 to 2000 Hz, box from 20 to 20,000 Hz, with the nearest note) and Volume.
 - **Preview:**
@@ -85,6 +85,7 @@ Several notes can play at once, with a limiter so they don't clip.
 
 | Keys | Action |
 |---|---|
+| Space | Play / stop (except while typing in a box or choosing from a menu) |
 | Ctrl+Z (⌘Z) | Undo (up to 200 steps; a whole drag or a typed number counts as one step) |
 | Ctrl+Y or Ctrl+Shift+Z (⌘⇧Z) | Redo |
 | A W S E D F T G Y H U J K O L P ; | Play notes while held |

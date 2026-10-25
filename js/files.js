@@ -78,6 +78,28 @@
     }, function(){ status.textContent = 'That file couldn’t be read.'; });
   }
   document.getElementById('open').addEventListener('click', function(){ picker.click(); });
+
+  // Presets: standard waves built from exact pieces, in the same form as a saved file. Each cycle is 4 long; all but the
+  // square start on the middle line.
+  function L(length, y){ return { type:'line', length: length, end:{ y: y } }; }
+  function Q(smooth, y){ return { type:'sine', length: 1, end:{ y: y }, smooth: smooth }; }
+  var PRESETS = {
+    sine:     { name:'Sine',     start:{ y:0 }, sections:[Q('end', 1), Q('start', 0), Q('end', -1), Q('start', 0)] },
+    saw:      { name:'Saw',      start:{ y:0 }, sections:[L(2, 1), L(0, -1), L(2, 0)] },
+    triangle: { name:'Triangle', start:{ y:0 }, sections:[L(1, 1), L(2, -1), L(1, 0)] },
+    square:   { name:'Square',   start:{ y:1 }, sections:[L(2, 1), L(0, -1), L(2, -1), L(0, 1)] }
+  };
+  var presetSel = document.getElementById('preset');
+  presetSel.addEventListener('change', function(){
+    var p = PRESETS[presetSel.value];
+    presetSel.value = '';  // back to "Presets", ready for next time
+    if(!p) return;
+    afterAsking('open the ' + p.name + ' preset', function(saved){
+      D.loadWave(D.fromFile(p));
+      D.save(); D.render(); nameIn.value = D.state.name; D.showUnsaved(); D.resetHistory();
+      status.textContent = saved.trim();
+    });
+  });
   picker.addEventListener('change', function(){ openFile(picker.files[0]); picker.value = ''; });
 
   document.getElementById('new').addEventListener('click', function(){

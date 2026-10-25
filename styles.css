@@ -12,27 +12,27 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",syst
 main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 
 /* Toolbar: the controls used all the time. Pinned to the top on wider screens; on phones it scrolls away. */
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
 @media (min-width:700px){.toolbar{position:sticky;top:0;z-index:10}}
 .brand{font-size:1.15rem;margin:0;letter-spacing:-.01em}
 .tb-group{display:flex;align-items:center;gap:6px}
 .toolbar button{padding:6px 12px}
 #undo,#redo{font-size:1.1rem;line-height:1;padding:6px 10px}
-#wave-name{width:170px}
+#wave-name{width:150px}
 .tb-label{color:var(--muted);font-size:.9rem}
 .toolbar input[type=range]{height:24px}
-.toolbar .tb-freq{width:120px}
-.toolbar .tb-vol{width:80px}
-.toolbar .tb-num{width:84px}
+.toolbar .tb-freq{width:100px}
+.toolbar .tb-vol{width:70px}
+.toolbar .tb-num{width:76px}
 .toolbar .tb-small{width:60px}
 .tb-note{color:var(--muted);font-size:.9rem;min-width:2.6em}
 .unsaved{color:var(--accent);font-weight:700;font-size:1.2rem;margin-left:-2px}
-/* Phones: the name box shrinks to share its row with Save, Open and New. */
+/* Phones: the name box gets its own row, with Save, Open, Presets and New below it. */
 @media (max-width:600px){
   .toolbar{padding:10px 16px;gap:8px 12px}
   main{padding:12px 16px 48px}
-  .tb-file{flex:1 1 100%;min-width:0}
-  .toolbar #wave-name{flex:1 1 auto;width:auto;min-width:0}
+  .tb-file{flex:1 1 100%;min-width:0;flex-wrap:wrap}
+  .toolbar #wave-name{flex:1 1 calc(100% - 24px);width:auto;min-width:0}
   .tb-play{flex:1 1 100%;min-width:0;order:2}
   .tb-file{order:1}
   .toolbar > .tb-group:last-child{order:3}  /* volume; undo and redo stay up beside the title */

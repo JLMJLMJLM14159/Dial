@@ -100,10 +100,24 @@
 
   // Play button and frequency: a held note at the chosen frequency, whose pitch follows the frequency as it changes.
   function setPlaying(on){ playBtn.textContent = on ? 'Stop' : 'Play'; playBtn.setAttribute('aria-pressed', on ? 'true' : 'false'); }
-  playBtn.addEventListener('click', function(){
+  function togglePlay(){
     if(voices.play){ stopVoice('play'); setPlaying(false); }
     else{ startVoice('play', prefs.freq, 1); setPlaying(true); }
+  }
+  playBtn.addEventListener('click', togglePlay);
+  // Space starts and stops playing, like a DAW's transport, except while typing in a box or choosing from a menu. It
+  // also takes over from a focused button (which Space would otherwise press); Enter still presses buttons.
+  function spaceIsFree(e){
+    var t = e.target;
+    if(document.getElementById('ask').open || t.isContentEditable || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return false;
+    return !(t.tagName === 'INPUT' && /^(text|number|search)$/.test(t.type));
+  }
+  window.addEventListener('keydown', function(e){
+    if(e.code !== 'Space' || e.ctrlKey || e.metaKey || e.altKey || !spaceIsFree(e)) return;
+    e.preventDefault();
+    if(!e.repeat) togglePlay();
   });
+  window.addEventListener('keyup', function(e){ if(e.code === 'Space' && spaceIsFree(e)) e.preventDefault(); });
   function setFreq(f, from){
     prefs.freq = Math.round(Math.min(20000, Math.max(20, f)) * 100) / 100;
     if(from !== freqR) freqR.value = freqToSlider(Math.min(2000, prefs.freq));
