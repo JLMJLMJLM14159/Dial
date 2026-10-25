@@ -12,6 +12,7 @@
     if(D.waveChanged) D.waveChanged();
     if(D.showUnsaved) D.showUnsaved();
     if(D.noteChange) D.noteChange();
+    if(D.harmonicsChanged) D.harmonicsChanged();
   }
 
   // Slider tracks follow the length and each handle's allowed range depends on the rest of the section, so refresh them in place.
@@ -193,7 +194,7 @@
 
   // Remember which fold-away panels are left open, in this browser only.
   document.querySelectorAll('details.panel').forEach(function(d){
-    try{ if(localStorage.getItem('dial-open-' + d.id) === '1') d.open = true; }catch(e){}
+    try{ var v = localStorage.getItem('dial-open-' + d.id); if(v === '1') d.open = true; else if(v === '0') d.open = false; }catch(e){}
     d.addEventListener('toggle', function(){ try{ localStorage.setItem('dial-open-' + d.id, d.open ? '1' : '0'); }catch(e){} });
   });
 

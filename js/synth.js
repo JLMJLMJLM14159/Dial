@@ -225,5 +225,6 @@
 
   setFreq(prefs.freq); setVol(prefs.vol);
   // For tests and your own code.
+  D.fft = fft;
   D.synth = { start: startVoice, stop: stopVoice, onMidi: onMidi, buildWave: buildWave, wavBlob: wavBlob, renderNote: renderNote, playing: function(){ return Object.keys(voices); } };
 })(window.Dial = window.Dial || {});

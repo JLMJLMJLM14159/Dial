@@ -58,6 +58,14 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 .panel[open]{padding-bottom:16px}
 .panel pre{margin-top:4px}
 .note{color:var(--muted);font-size:.9rem;margin:10px 0 0}
+.harm-wrap{position:relative;margin-top:8px}
+#harm-chart svg{display:block}
+.harm-axis{fill:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+.harm-tip{position:absolute;top:-4px;background:var(--ink);color:var(--surface);font-size:.8rem;padding:4px 8px;border-radius:6px;white-space:nowrap;pointer-events:none}
+.harm-table{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.harm-table table{border-collapse:collapse;width:100%;font-size:.85rem;font-variant-numeric:tabular-nums}
+.harm-table th,.harm-table td{padding:4px 12px;text-align:right;border-bottom:1px solid var(--line)}
+.harm-table th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:600}
 .cardnote{margin:0 0 4px}
 .section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px 8px;margin-bottom:16px}
 .head{display:flex;gap:10px;align-items:center;margin-bottom:6px}

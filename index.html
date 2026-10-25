@@ -53,6 +53,17 @@
     <div class="inspector" id="sections"></div>
   </div>
 
+  <details class="panel" id="panel-harm" open>
+    <summary>Harmonics</summary>
+    <p class="note cardnote">How strong each harmonic is, compared with the strongest. The 1st is the note itself, the 2nd is twice its frequency, and so on. Smooth shapes have few harmonics and sound soft; sharp corners and jumps have many and sound bright. This is only a view: edit the wave above.</p>
+    <div class="harm-wrap">
+      <div id="harm-chart"></div>
+      <div class="harm-tip" id="harm-tip" role="status" hidden></div>
+    </div>
+    <div class="row"><button type="button" id="harm-numbers" aria-expanded="false" aria-controls="harm-table">Show numbers</button></div>
+    <div class="harm-table" id="harm-table" hidden></div>
+  </details>
+
   <details class="panel" id="panel-keys">
     <summary>Keyboard and MIDI</summary>
     <p class="note">Hold a key to play a note for as long as you hold it: A W S E D F T G Y H U J K O L P ; are piano keys starting from <span id="oct">C4</span>, and Z and X move down and up an octave.</p>
@@ -106,6 +117,7 @@
 <script src="js/controls.js"></script>
 <script src="js/drag.js"></script>
 <script src="js/synth.js"></script>
+<script src="js/harmonics.js"></script>
 <script src="js/files.js"></script>
 <script src="js/history.js"></script>
 <script src="js/main.js"></script>
