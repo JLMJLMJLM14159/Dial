@@ -192,6 +192,33 @@
     try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(e){ fallback(); }
   });
 
+  // View toggles under the preview: Snap, Ghost copies, Loop arrow (kept per browser).
+  var viewBtns = document.querySelectorAll('.viewbar .toggle');
+  function showView(){ viewBtns.forEach(function(b){ b.setAttribute('aria-pressed', D.view[b.dataset.view] ? 'true' : 'false'); }); }
+  function toggleView(k){ D.view[k] = !D.view[k]; D.saveView(); showView(); D.drawPreview(); }
+  viewBtns.forEach(function(b){ b.addEventListener('click', function(){ toggleView(b.dataset.view); }); });
+  showView();
+
+  // Keyboard editing, when not typing in a box, using a slider or choosing from a menu: ← → select the previous or next
+  // section, ↑ ↓ move its end (by 0.05, or 0.01 with Shift), [ ] shorten or lengthen it (by 0.1, or 0.01 with Shift),
+  // Delete or Backspace removes it, and Q turns snapping on or off.
+  function editKeysFree(e){
+    var t = e.target;
+    if(document.getElementById('ask').open || t.isContentEditable) return false;
+    return !(t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA');
+  }
+  window.addEventListener('keydown', function(e){
+    if(e.ctrlKey || e.metaKey || e.altKey || !editKeysFree(e)) return;
+    var idx = selIndex(), s = D.state.sections[idx], n = D.state.sections.length;
+    if(e.key === 'ArrowLeft' || e.key === 'ArrowRight') D.select(Math.min(n - 1, Math.max(0, idx + (e.key === 'ArrowRight' ? 1 : -1))));
+    else if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){ setKey(s, 'ey', s.ey + (e.key === 'ArrowUp' ? 1 : -1) * (e.shiftKey ? 0.01 : 0.05)); D.save(); renderOut(); }
+    else if(e.code === 'BracketLeft' || e.code === 'BracketRight'){ setKey(s, 'length', s.length + (e.code === 'BracketRight' ? 1 : -1) * (e.shiftKey ? 0.01 : 0.1)); D.save(); renderOut(); }
+    else if(e.key === 'Delete' || e.key === 'Backspace'){ if(!removeBtn.disabled) removeBtn.click(); }
+    else if(e.code === 'KeyQ'){ if(e.repeat) return; toggleView('snap'); }
+    else return;
+    e.preventDefault();
+  });
+
   // Remember which fold-away panels are left open, in this browser only.
   document.querySelectorAll('details.panel').forEach(function(d){
     try{ var v = localStorage.getItem('dial-open-' + d.id); if(v === '1') d.open = true; else if(v === '0') d.open = false; }catch(e){}

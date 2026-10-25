@@ -25,6 +25,7 @@
     var d = toData(e); if(!d) return;
     var g = D.sectionGeo()[drag.i], s = D.state.sections[drag.i];
     if(!g || !s) return;
+    if(D.view.snap){ d.x = Math.round(d.x / D.GRID.x) * D.GRID.x; d.y = Math.round(d.y / D.GRID.y) * D.GRID.y; }  // snap to the grid
     var rx = d.x - g.X;
     if(drag.k === 'end'){ D.setKey(s, 'length', rx); D.setKey(s, 'ey', d.y); }
     else if(drag.k === 'h1'){ D.setKey(s, 'h1x', rx); D.setKey(s, 'h1y', d.y); }

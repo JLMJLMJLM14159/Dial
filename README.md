@@ -13,6 +13,7 @@ Everything runs in the browser, with no install, build step or server.
   - MIDI needs a "secure" page; Chrome and Edge treat local files as secure.
   - Waves saved in the browser are kept separately for the local copy and the online one. Use **Save** and **Open** to move waves between them.
   - To serve it anyway (for example to try it on a phone over Wi-Fi): `python3 -m http.server` in the folder.
+- **Offline and as an app:** once the online version has been opened, it keeps working without internet. It can also be installed like an app (the install button in Chrome or Edge's address bar, or Share → Add to Home Screen on a phone). Online, it always loads the latest version.
 
 ## How the wave works
 
@@ -63,11 +64,12 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 - **Preview:**
   - Click a section's curve to select it. The selected section is drawn bold with its handles.
   - Drag dots to edit: hollow dots are Bézier handles, dark dots are section ends.
+- **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly), **Ghost copies** (faint copies of the cycles before and after) and **Loop arrow** (points the way the wave carries on from the start). The page remembers them.
 - **Section strip:** the section numbers (click one to select it), **+ Add section**, **− Remove section** (removes the selected one) and **Scale to fit**. Scale to fit moves the start onto the middle line and makes the wave as large as fits, without changing its shape.
 - **Section panel:** the controls for the selected section.
 - **Fold-away panels** (the page remembers which are open):
   - **Harmonics:** a view-only chart of the first 32 harmonics, each as a share of the strongest, with a table of numbers.
-  - **Keyboard and MIDI:** hold keys A W S E D F T G Y H U J K O L P ; to play notes, with Z and X to change octave. **Connect MIDI keyboard** works in Chrome, Edge and Firefox (not Safari).
+  - **Keyboard and MIDI:** a two-octave **on-screen piano** (press, tap or slide across the keys; − and + change octave), and the computer keys A W S E D F T G Y H U J K O L P ; with Z and X to change octave. Keys light up while their note sounds. **Connect MIDI keyboard** works in Chrome, Edge and Firefox (not Safari); its sustain pedal holds notes and its pitch-bend wheel bends them by up to 2 semitones.
   - **Export:** **Download cycle (WAV)** is one cycle, 2048 samples, 24-bit, exactly as drawn, for wavetable synths and samplers such as Vital or Serum. **Download note (WAV)** is the current frequency held for a set length (up to 60 seconds), to drop onto a DAW track.
   - **Data (JSON):** the recorded values, with Copy JSON.
   - **Help.**
@@ -83,9 +85,16 @@ Several notes can play at once, with a limiter so they don't clip.
 
 ### Keyboard shortcuts
 
+The editing keys work whenever you aren't typing in a box, using a slider or choosing from a menu.
+
 | Keys | Action |
 |---|---|
 | Space | Play / stop (except while typing in a box or choosing from a menu) |
+| ← / → | Select the previous / next section |
+| ↑ / ↓ | Move the selected section's end up / down by 0.05 (Shift: 0.01) |
+| [ / ] | Shorten / lengthen the selected section by 0.1 (Shift: 0.01) |
+| Delete or Backspace | Remove the selected section |
+| Q | Snap on / off |
 | Ctrl+Z (⌘Z) | Undo (up to 200 steps; a whole drag or a typed number counts as one step) |
 | Ctrl+Y or Ctrl+Shift+Z (⌘⇧Z) | Redo |
 | A W S E D F T G Y H U J K O L P ; | Play notes while held |
@@ -137,6 +146,8 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `js/harmonics.js` | The harmonics chart |
 | `js/files.js` | Save, Open, New, unsaved-changes tracking |
 | `js/history.js` | Undo and redo |
-| `js/main.js` | Start-up |
+| `js/main.js` | Start-up, and turning on offline support |
+| `sw.js` | Offline support: keeps a copy of the files, always trying the network first |
+| `manifest.webmanifest`, `icons/` | App name, colours and icons, for installing |
 
-The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, and open panels under `dial-open-*`.
+The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, and the view buttons under `dial-view-v1`.

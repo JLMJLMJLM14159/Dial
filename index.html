@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dial sections</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#0f7b6c">
 </head>
 <body>
 <header class="toolbar">
@@ -56,6 +59,11 @@
         <button type="button" id="remove" title="Remove the selected section">− Remove section</button>
         <button type="button" id="fit" title="Put the start on the middle line and make the wave as large as fits">Scale to fit</button>
       </div>
+      <div class="viewbar" role="group" aria-label="View">
+        <button type="button" class="toggle" id="snap-btn" data-view="snap" aria-pressed="false" title="Snap dragged dots to a grid (Q)">Snap <kbd>Q</kbd></button>
+        <button type="button" class="toggle" id="ghosts-btn" data-view="ghosts" aria-pressed="false" title="Show faint copies of the cycles before and after">Ghost copies</button>
+        <button type="button" class="toggle" id="arrow-btn" data-view="arrow" aria-pressed="false" title="Show an arrow where the wave carries on from the start">Loop arrow</button>
+      </div>
     </div>
     <div class="inspector" id="sections"></div>
   </div>
@@ -73,9 +81,16 @@
 
   <details class="panel" id="panel-keys">
     <summary>Keyboard and MIDI</summary>
-    <p class="note">Hold a key to play a note for as long as you hold it: A W S E D F T G Y H U J K O L P ; are piano keys starting from <span id="oct">C4</span>, and Z and X move down and up an octave.</p>
+    <div class="piano-head">
+      <button type="button" id="oct-down" aria-label="Octave down" title="Octave down (Z)">−</button>
+      <span id="piano-oct" class="note"></span>
+      <button type="button" id="oct-up" aria-label="Octave up" title="Octave up (X)">+</button>
+    </div>
+    <div class="piano" id="piano" aria-label="On-screen piano"></div>
+    <p class="note">Press, tap or slide across the keys to play. On a computer keyboard, hold A W S E D F T G Y H U J K O L P ; to play notes starting from <span id="oct">C4</span>; Z and X move down and up an octave (the piano follows).</p>
     <div class="row"><button type="button" id="midi">Connect MIDI keyboard</button></div>
     <p class="note cardnote" id="midistatus" aria-live="polite"></p>
+    <p class="note">A MIDI keyboard’s sustain pedal holds notes, and its pitch-bend wheel bends notes by up to 2 semitones.</p>
   </details>
 
   <details class="panel" id="panel-export">
@@ -100,7 +115,7 @@
     <summary>Help</summary>
     <p class="note">Each section is one piece of the line, and the sections join end to start in order. Pick a type for each: a Bézier curve with handles, a Sine piece, a straight Line, or a Curve (a line with a bend). Everything is kept in this browser as you go.</p>
     <p class="note">Click a section in the preview, or its number under the preview, to edit it on its own; its controls appear beside (or below) the preview. The selected section is drawn bold with its hollow Bézier handles; drag any dot to edit. Dark dots mark where sections join. The square marks the start. It can’t be dragged: the wave loops forever, so the start always sits at the same height as the end, and moving the last dot moves the square with it. The thin line running across is the middle line, and the dashed lines mark the limit of 1 above and below it.</p>
-    <p class="note">Play (or the Space bar) plays the line as one repeating cycle; changing the frequency changes the pitch, even while it plays. Presets, next to Open, starts from a standard Sine, Saw, Triangle or Square wave. Undo and Redo also work with Ctrl+Z and Ctrl+Y (⌘Z and ⌘⇧Z on a Mac). Scale to fit moves the wave so the start square sits on the middle line, then makes it as large as fits between −1 and 1, without changing its shape.</p>
+    <p class="note">Play (or the Space bar) plays the line as one repeating cycle; changing the frequency changes the pitch, even while it plays. Presets, next to Open, starts from a standard Sine, Saw, Triangle or Square wave. Undo and Redo also work with Ctrl+Z and Ctrl+Y (⌘Z and ⌘⇧Z on a Mac). With nothing typed into, ← and → select the previous or next section, ↑ and ↓ move its end (by 0.05, or 0.01 with Shift), [ and ] shorten or lengthen it (by 0.1, or 0.01 with Shift), Delete removes it, and Q turns Snap on or off. Snap makes dragged dots land on a grid (every 0.25 across, every 0.1 in height). Ghost copies shows faint copies of the cycles before and after, and Loop arrow points the way the wave carries on from the start. Scale to fit moves the wave so the start square sits on the middle line, then makes it as large as fits between −1 and 1, without changing its shape.</p>
     <p class="note">Save downloads the wave as a small .dial.json file; send it to anyone and they can open it here and carry on editing. You can also drop a wave file anywhere on the page to open it. The * next to the name (and in the browser tab) means the wave has changes since it was last saved or opened; if it does, opening another wave or starting a new one asks whether to save it first.</p>
     <p class="note">A Sine section is part of a sine wave from its start height to its end height: “Both ends” is half a cycle, smooth at both ends, and “End only” or “Start only” is a quarter cycle that is smooth at that end. Two “Both ends” sections, low to high and back, make one exact sine cycle. A Line goes straight from its start to its end: keep End y at the start’s height for a level stretch, or set Length to 0 for an instant jump (as in square and saw waves). A Curve is a line with a Bend from −20 to 20: 0 is straight, a positive bend moves fast at first and levels off into the end (like a pluck dying away or a charging curve), and a negative bend starts slowly and speeds up. The bend is the rate of an exponential: from height 1 to e⁻⁴ ≈ 0.0183 with Bend 4 is exactly e^(−4x). Length can be any number from 0 up. Length and handle x are measured from the section’s start. The handles are kept where the curve can never go backwards: Handle 1 x can reach up to 4/3 of the length and Handle 2 x down to −1/3 of it, but how far each one can go depends on where the other is. If a shorter length leaves the handles no room, they move in towards the start just enough to fit. Every y value is the height above or below the middle line. End y goes from −1 to 1. The handles can go further, as far as the curve itself stays between −1 and 1; how far depends on the rest of the section.</p>
   </details>

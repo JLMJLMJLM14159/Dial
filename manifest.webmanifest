@@ -1,0 +1,15 @@
+{
+  "name": "Dial",
+  "short_name": "Dial",
+  "description": "Build single-cycle waveforms from exact pieces, play them, and save or export them.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f1",
+  "theme_color": "#0f7b6c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

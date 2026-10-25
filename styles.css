@@ -51,6 +51,20 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 .strip-secs button.alt{border-bottom-color:var(--c2)}
 .strip-secs button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 .inspector .section{margin-bottom:0}
+.piano-head{display:flex;align-items:center;gap:8px;margin:4px 0 8px}
+.piano-head button{padding:2px 12px}
+.piano-head .note{margin:0;min-width:5.5em;text-align:center}
+.piano{position:relative;height:120px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pkey{position:absolute;top:0;box-sizing:border-box;cursor:pointer}
+.pkey.white{height:100%;background:var(--surface);border:1px solid var(--line);border-radius:0 0 6px 6px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.pkey.white span{font-size:.7rem;color:var(--muted)}
+.pkey.black{height:62%;background:var(--ink);border-radius:0 0 5px 5px;z-index:1}
+.pkey.on{background:var(--accent)}
+.pkey.white.on span{color:var(--accent-ink)}
+.viewbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.viewbar .toggle{padding:4px 10px;font-size:.88rem;color:var(--muted)}
+.viewbar .toggle[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+kbd{font:inherit;font-size:.75rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:2px;color:var(--muted)}
 
 /* Fold-away panels for things used now and then. */
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:0 20px;margin-top:16px}

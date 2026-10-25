@@ -5,4 +5,11 @@
   D.render();
   D.initFiles();
   D.resetHistory();
+
+  // Offline support and installing as an app. These need the page to be served (as on GitHub Pages); a copy opened
+  // straight from disk works offline anyway.
+  if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    var m = document.createElement('link'); m.rel = 'manifest'; m.href = 'manifest.webmanifest'; document.head.appendChild(m);
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
 })(window.Dial = window.Dial || {});

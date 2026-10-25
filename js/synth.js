@@ -81,22 +81,44 @@
     });
   };
 
-  // Each sounding note is its own oscillator, faded in and out quickly so it doesn't click.
-  function startVoice(id, freq, level){
-    if(voices[id]) return;
+  // Each sounding note is its own oscillator, faded in and out quickly so it doesn't click. Notes played from keys
+  // (computer, on-screen or MIDI) remember their MIDI note number, so the on-screen piano can light them up; they follow
+  // the pitch-bend wheel and the sustain pedal. The Play button's note does neither.
+  var sustain = false, bend = 0;  // bend in cents
+  function startVoice(id, freq, level, note){
+    if(voices[id]){ if(!voices[id].sustained) return; endVoice(id); }  // pressing a sustained note again restarts it
     ensureCtx();
     var now = ctx.currentTime, osc = ctx.createOscillator(), g = ctx.createGain();
     osc.setPeriodicWave(getWave()); osc.frequency.value = freq;
+    if(id !== 'play') osc.detune.value = bend;
     g.gain.value = 0; g.gain.setTargetAtTime(0.5 * level, now, 0.005);
     osc.connect(g); g.connect(master); osc.start(now);
-    voices[id] = { osc: osc, g: g };
+    voices[id] = { osc: osc, g: g, note: note };
+    notesChanged();
   }
-  function stopVoice(id){
+  function endVoice(id){
     var v = voices[id]; if(!v) return;
     delete voices[id];
     var now = ctx.currentTime;
     v.g.gain.cancelScheduledValues(now); v.g.gain.setTargetAtTime(0, now, 0.02); v.osc.stop(now + 0.25);
+    notesChanged();
   }
+  // Letting go of a key: with the sustain pedal down, the note keeps sounding until the pedal comes up.
+  function stopVoice(id){
+    var v = voices[id]; if(!v) return;
+    if(sustain && id !== 'play'){ v.sustained = true; return; }
+    endVoice(id);
+  }
+  function setSustain(on){
+    sustain = on;
+    if(!on) Object.keys(voices).forEach(function(id){ if(voices[id].sustained) endVoice(id); });
+  }
+  function setBend(cents){
+    bend = cents;
+    if(!ctx) return;
+    Object.keys(voices).forEach(function(id){ if(id !== 'play') voices[id].osc.detune.setTargetAtTime(cents, ctx.currentTime, 0.005); });
+  }
+  function notesChanged(){ if(D.showPianoNotes) D.showPianoNotes(Object.keys(voices).map(function(id){ return voices[id].note; })); }
 
   // Play button and frequency: a held note at the chosen frequency, whose pitch follows the frequency as it changes.
   function setPlaying(on){ playBtn.textContent = on ? 'Stop' : 'Play'; playBtn.setAttribute('aria-pressed', on ? 'true' : 'false'); }
@@ -148,20 +170,64 @@
     if(e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e)) return;
     if(e.code === 'KeyZ' || e.code === 'KeyX'){
       octave = Math.min(8, Math.max(0, octave + (e.code === 'KeyX' ? 1 : -1)));
-      octEl.textContent = 'C' + octave; e.preventDefault(); return;
+      setOctave(octave); e.preventDefault(); return;
     }
     if(!(e.code in KEYS)) return;
-    startVoice('k' + e.code, mtof(12 * (octave + 1) + KEYS[e.code]), 1);
+    var m = 12 * (octave + 1) + KEYS[e.code];
+    startVoice('k' + e.code, mtof(m), 1, m);
     e.preventDefault();
   });
   window.addEventListener('keyup', function(e){ if(e.code in KEYS) stopVoice('k' + e.code); });
-  window.addEventListener('blur', function(){ Object.keys(voices).forEach(function(id){ if(id !== 'play') stopVoice(id); }); });
+  window.addEventListener('blur', function(){ sustain = false; Object.keys(voices).forEach(function(id){ if(id !== 'play') endVoice(id); }); });
 
-  // MIDI keyboards: note on starts a note (how hard it's pressed sets how loud), note off stops it. All channels are played.
+  // On-screen piano: two octaves from the current octave (the same one Z and X move), played by pressing, tapping or
+  // sliding across the keys. Keys light up while their note sounds, whatever is playing it.
+  var piano = document.getElementById('piano'), pianoOct = document.getElementById('piano-oct'), pianoKeys = {}, pointers = {};
+  var BLACK = { 1: 1, 3: 1, 6: 1, 8: 1, 10: 1 };
+  function buildPiano(){
+    var lo = 12 * (octave + 1), whites = 0, html = '', i;
+    for(i = 0; i <= 24; i++) if(!BLACK[i % 12]) whites++;
+    var ww = 100 / whites, wi = 0;
+    for(i = 0; i <= 24; i++){
+      var m = lo + i, black = BLACK[i % 12], label = i % 12 === 0 ? noteOf(m) : '';
+      if(black) html += '<div class="pkey black" data-m="' + m + '" style="left:' + (wi * ww - ww * 0.3) + '%;width:' + (ww * 0.6) + '%" aria-label="' + noteOf(m) + '"></div>';
+      else { html += '<div class="pkey white" data-m="' + m + '" style="left:' + (wi * ww) + '%;width:' + ww + '%" aria-label="' + noteOf(m) + '"><span>' + label + '</span></div>'; wi++; }
+    }
+    piano.innerHTML = html;
+    pianoKeys = {};
+    piano.querySelectorAll('.pkey').forEach(function(k){ pianoKeys[k.dataset.m] = k; });
+    pianoOct.textContent = noteOf(lo) + '–' + noteOf(lo + 24);
+    notesChanged();
+  }
+  D.showPianoNotes = function(notes){
+    Object.keys(pianoKeys).forEach(function(m){ pianoKeys[m].classList.toggle('on', notes.indexOf(+m) >= 0); });
+  };
+  function setOctave(o){ octave = Math.min(7, Math.max(0, o)); octEl.textContent = 'C' + octave; buildPiano(); }
+  document.getElementById('oct-down').addEventListener('click', function(){ setOctave(octave - 1); });
+  document.getElementById('oct-up').addEventListener('click', function(){ setOctave(octave + 1); });
+  function keyAt(e){ var el = document.elementFromPoint(e.clientX, e.clientY); return el && el.closest && el.closest('.pkey'); }
+  function pianoPress(e, k){
+    var id = 'p' + e.pointerId, prev = pointers[e.pointerId];
+    if(prev === (k && k.dataset.m)) return;
+    if(prev) stopVoice(id);
+    pointers[e.pointerId] = k ? k.dataset.m : null;
+    if(k) startVoice(id, mtof(+k.dataset.m), 1, +k.dataset.m);
+  }
+  piano.addEventListener('pointerdown', function(e){ e.preventDefault(); pianoPress(e, keyAt(e)); });
+  piano.addEventListener('pointermove', function(e){ if(e.pointerId in pointers) pianoPress(e, keyAt(e)); });  // slide across keys
+  function pianoUp(e){ if(!(e.pointerId in pointers)) return; if(pointers[e.pointerId]) stopVoice('p' + e.pointerId); delete pointers[e.pointerId]; }
+  ['pointerup', 'pointercancel'].forEach(function(t){ window.addEventListener(t, pianoUp); });
+  piano.addEventListener('pointerleave', function(e){ if(e.pointerType === 'mouse') pianoUp(e); });
+
+  // MIDI keyboards: note on starts a note (how hard it's pressed sets how loud), note off stops it, the sustain pedal
+  // (controller 64) holds notes, and the pitch-bend wheel bends every key-played note by up to 2 semitones either way.
+  // All channels are played.
   function onMidi(e){
     var d = e.data, cmd = d[0] & 0xf0;
-    if(cmd === 0x90 && d[2] > 0) startVoice('m' + d[1], mtof(d[1]), d[2] / 127);
+    if(cmd === 0x90 && d[2] > 0) startVoice('m' + d[1], mtof(d[1]), d[2] / 127, d[1]);
     else if(cmd === 0x80 || (cmd === 0x90 && d[2] === 0)) stopVoice('m' + d[1]);
+    else if(cmd === 0xB0 && d[1] === 64) setSustain(d[2] >= 64);
+    else if(cmd === 0xE0) setBend((((d[2] << 7) | d[1]) - 8192) / 8192 * 200);
   }
   midiBtn.addEventListener('click', function(){
     ensureCtx();  // the click also lets the page make sound
@@ -237,8 +303,9 @@
     }, function(){ noteStatus.textContent = 'Sorry, the note couldn’t be made in this browser.'; });
   });
 
-  setFreq(prefs.freq); setVol(prefs.vol);
+  setFreq(prefs.freq); setVol(prefs.vol); buildPiano();
   // For tests and your own code.
   D.fft = fft;
-  D.synth = { start: startVoice, stop: stopVoice, onMidi: onMidi, buildWave: buildWave, wavBlob: wavBlob, renderNote: renderNote, playing: function(){ return Object.keys(voices); } };
+  D.synth = { start: startVoice, stop: stopVoice, onMidi: onMidi, buildWave: buildWave, wavBlob: wavBlob, renderNote: renderNote, playing: function(){ return Object.keys(voices); },
+    notes: function(){ return Object.keys(voices).map(function(id){ return voices[id].note; }); }, detunes: function(){ return Object.keys(voices).map(function(id){ return voices[id].osc.detune.value; }); } };
 })(window.Dial = window.Dial || {});
