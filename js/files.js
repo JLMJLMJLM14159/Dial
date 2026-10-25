@@ -21,6 +21,14 @@
   };
   nameIn.addEventListener('input', function(){ D.state.name = nameIn.value; D.save(); D.showUnsaved(); D.noteChange(); });
 
+  // Reloading or closing the page with unsaved changes: ask the browser to warn first. The browser shows its own
+  // "Leave site?" box (pages can't change its wording or add a Save button), and only once the page has been used.
+  window.addEventListener('beforeunload', function(e){
+    if(!isDirty()) return;
+    e.preventDefault();
+    e.returnValue = '';  // older browsers need this as well
+  });
+
   // Ask what to do about unsaved changes before replacing the wave: 'save', 'discard' or 'cancel'.
   // With nothing unsaved there's nothing to ask.
   function askUnsaved(what){

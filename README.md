@@ -100,7 +100,7 @@ The editing keys work whenever you aren't typing in a box, using a slider or cho
 | A W S E D F T G Y H U J K O L P ; | Play notes while held |
 | Z / X | Octave down / up |
 
-Opening a wave or starting a new one asks whether to save first, but only if there are unsaved changes.
+Opening a wave or starting a new one asks whether to save first, but only if there are unsaved changes. Reloading or closing the page with unsaved changes makes the browser show its own "Leave site?" warning. (The wave itself is kept in the browser either way; the warning is a reminder to save a file.)
 
 ## Saved files (`.dial.json`)
 
