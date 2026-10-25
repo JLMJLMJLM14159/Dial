@@ -12,7 +12,10 @@
   svg.addEventListener('pointerdown', function(e){
     var t = e.target;
     if(!t.getAttribute || t.getAttribute('data-k') === null) return;
-    drag = { i: +t.getAttribute('data-i'), k: t.getAttribute('data-k') };
+    var i = +t.getAttribute('data-i'), k = t.getAttribute('data-k');
+    D.select(i);  // clicking a curve or any of its dots selects that section
+    if(k === 'sel'){ e.preventDefault(); return; }
+    drag = { i: i, k: k };
     D.frozenVB = svg.getAttribute('viewBox');
     svg.setPointerCapture(e.pointerId);
     e.preventDefault();

@@ -1,6 +1,6 @@
 // Section cards, slider/number rows, JSON output and the page buttons.
 (function(D){
-  var host = document.getElementById('sections');
+  var host = document.getElementById('sections'), strip = document.getElementById('strip');
   var out = document.getElementById('out');
   var FIELDS = D.FIELDS, rnd = D.rnd, clamp = D.clamp;
   D.refs = {};
@@ -93,60 +93,87 @@
     return sel;
   }
 
+  // The selected section is the one shown for editing. It is kept by id, so it survives undo; if it's gone, the nearest
+  // remaining section (or the first) is selected instead.
+  D.selId = null;
+  function selIndex(){
+    var list = D.state.sections, i = list.findIndex(function(x){ return x.id === D.selId; });
+    if(i < 0){ i = Math.min(Math.max(D.selIdx || 0, 0), list.length - 1); D.selId = list[i].id; }
+    D.selIdx = i;
+    return i;
+  }
+  D.select = function(i){
+    if(!D.state.sections[i] || D.state.sections[i].id === D.selId) return;
+    D.selId = D.state.sections[i].id; render();
+  };
+
+  // The numbered strip under the preview: one button per section, coloured like its curve.
+  function buildStrip(sel){
+    strip.innerHTML = '';
+    D.state.sections.forEach(function(s, idx){
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = idx + 1; b.className = idx % 2 ? 'alt' : '';
+      b.setAttribute('aria-pressed', idx === sel ? 'true' : 'false');
+      b.title = 'Section ' + (idx + 1) + ' (' + D.TYPES.filter(function(t){ return t.key === s.type; })[0].label + ')';
+      b.addEventListener('click', function(){ D.select(idx); });
+      strip.appendChild(b);
+    });
+  }
+
   function render(){
     host.innerHTML = ''; D.refs = {};
-    D.state.sections.forEach(function(s, idx){
-      var sec = document.createElement('section');
-      sec.className = 'section';
+    var idx = selIndex(), s = D.state.sections[idx];
+    buildStrip(idx);
+    var sec = document.createElement('section');
+    sec.className = 'section';
 
-      var head = document.createElement('div');
-      head.className = 'head';
-      var h = document.createElement('h2');
-      h.textContent = 'Section ' + (idx + 1);
-      head.appendChild(h);
-      var typeId = 't-' + s.id;
-      head.appendChild(buildSelect(typeId, 'Section ' + (idx + 1) + ' type', D.TYPES, s.type, function(v){
-        D.setType(s, v); D.save(); render();
-        document.getElementById(typeId).focus();
-      }));
-      if(D.state.sections.length > 1){
-        var rm = document.createElement('button');
-        rm.type = 'button'; rm.className = 'remove'; rm.textContent = 'Remove';
-        rm.addEventListener('click', function(){
-          D.state.sections = D.state.sections.filter(function(x){ return x.id !== s.id; });
-          D.refitAll(); D.save(); render();
-        });
-        head.appendChild(rm);
-      }
-      sec.appendChild(head);
-      var locked = s === D.lockSection();
-      FIELDS.forEach(function(f){
-        if(f.types.indexOf(s.type) < 0) return;
-        sec.appendChild(buildRow(s, f));
-        if(f.key === 'ey' && locked){
-          var ln = document.createElement('p');
-          ln.className = 'note cardnote'; ln.textContent = 'Linked to the start square: the wave loops back to the start, so this is also the start’s height.';
-          sec.appendChild(ln);
-        }
+    var head = document.createElement('div');
+    head.className = 'head';
+    var h = document.createElement('h2');
+    h.textContent = 'Section ' + (idx + 1);
+    head.appendChild(h);
+    var typeId = 't-' + s.id;
+    head.appendChild(buildSelect(typeId, 'Section ' + (idx + 1) + ' type', D.TYPES, s.type, function(v){
+      D.setType(s, v); D.save(); render();
+      document.getElementById(typeId).focus();
+    }));
+    if(D.state.sections.length > 1){
+      var rm = document.createElement('button');
+      rm.type = 'button'; rm.className = 'remove'; rm.textContent = 'Remove';
+      rm.addEventListener('click', function(){
+        D.state.sections = D.state.sections.filter(function(x){ return x.id !== s.id; });
+        D.selId = null; D.selIdx = Math.min(idx, D.state.sections.length - 1);  // select the next one along
+        D.refitAll(); D.save(); render();
       });
-      if(s.type === 'sine'){
-        var row = document.createElement('div'), l = document.createElement('label'), smId = 's-' + s.id;
-        row.className = 'dial choice'; l.htmlFor = smId; l.textContent = 'Smooth at';
-        row.appendChild(l);
-        row.appendChild(buildSelect(smId, 'Smooth at', D.SMOOTHS, s.smooth, function(v){ s.smooth = v; D.save(); renderOut(); }));
-        sec.appendChild(row);
+      head.appendChild(rm);
+    }
+    sec.appendChild(head);
+    var locked = s === D.lockSection();
+    FIELDS.forEach(function(f){
+      if(f.types.indexOf(s.type) < 0) return;
+      sec.appendChild(buildRow(s, f));
+      if(f.key === 'ey' && locked){
+        var ln = document.createElement('p');
+        ln.className = 'note cardnote'; ln.textContent = 'Linked to the start square: the wave loops back to the start, so this is also the start’s height.';
+        sec.appendChild(ln);
       }
-      host.appendChild(sec);
     });
+    if(s.type === 'sine'){
+      var row = document.createElement('div'), l = document.createElement('label'), smId = 's-' + s.id;
+      row.className = 'dial choice'; l.htmlFor = smId; l.textContent = 'Smooth at';
+      row.appendChild(l);
+      row.appendChild(buildSelect(smId, 'Smooth at', D.SMOOTHS, s.smooth, function(v){ s.smooth = v; D.save(); renderOut(); }));
+      sec.appendChild(row);
+    }
+    host.appendChild(sec);
     renderOut();
   }
 
   document.getElementById('add').addEventListener('click', function(){
     var prev = D.state.sections[D.state.sections.length - 1];
-    D.state.sections.push(D.blank(prev ? prev.ey : D.state.start.sy));
+    var s = D.blank(prev ? prev.ey : D.state.start.sy);
+    D.state.sections.push(s); D.selId = s.id;  // the new section is selected for editing
     D.save(); render();
-    var last = host.lastElementChild;
-    if(last) last.scrollIntoView({ behavior:'smooth', block:'nearest' });
   });
   document.getElementById('fit').addEventListener('click', function(){
     D.scaleToFit();
@@ -161,6 +188,12 @@
       try{ document.execCommand('copy'); done(); }catch(e){}
     }
     try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(e){ fallback(); }
+  });
+
+  // Remember which fold-away panels are left open, in this browser only.
+  document.querySelectorAll('details.panel').forEach(function(d){
+    try{ if(localStorage.getItem('dial-open-' + d.id) === '1') d.open = true; }catch(e){}
+    d.addEventListener('toggle', function(){ try{ localStorage.setItem('dial-open-' + d.id, d.open ? '1' : '0'); }catch(e){} });
   });
 
   D.renderOut = renderOut; D.setKey = setKey; D.render = render;

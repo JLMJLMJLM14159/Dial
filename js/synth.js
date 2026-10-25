@@ -108,7 +108,7 @@
     prefs.freq = Math.round(Math.min(20000, Math.max(20, f)) * 100) / 100;
     if(from !== freqR) freqR.value = freqToSlider(Math.min(2000, prefs.freq));
     if(from !== freqN) freqN.value = prefs.freq;
-    noteName.textContent = 'Nearest note: ' + noteOf(Math.round(69 + 12 * Math.log2(prefs.freq / 440)));
+    noteName.textContent = noteOf(Math.round(69 + 12 * Math.log2(prefs.freq / 440)));
     if(voices.play) voices.play.osc.frequency.setTargetAtTime(prefs.freq, ctx.currentTime, 0.01);
     savePrefs();
   }
