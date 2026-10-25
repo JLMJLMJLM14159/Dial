@@ -1,12 +1,14 @@
 # Dial
 
+**Try it: <https://jlmjlmjlm14159.github.io/Dial/>**
+
 A small browser app for drawing a single-cycle waveform out of exact pieces (Bézier curves, sine pieces, straight lines and exponential curves), playing it as a synth, and saving or exporting it.
 
 Everything runs in the browser, with no install, build step or server.
 
 ## Running it
 
-- **Online:** with GitHub Pages switched on for this repo (Settings → Pages → Deploy from branch `main`, folder `/`), the app is at <https://jlmjlmjlm14159.github.io/Dial/>.
+- **Online:** <https://jlmjlmjlm14159.github.io/Dial/> (GitHub Pages, updated automatically on every push to `main`).
 - **Locally:** download the repo and double-click `index.html`. The scripts are plain files, not modules, so they load straight from disk.
   - MIDI needs a "secure" page; Chrome and Edge treat local files as secure.
   - Waves saved in the browser are kept separately for the local copy and the online one. Use **Save** and **Open** to move waves between them.
