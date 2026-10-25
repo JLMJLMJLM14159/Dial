@@ -64,7 +64,7 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 - **Preview:**
   - Click a section's curve to select it. The selected section is drawn bold with its handles.
   - Drag dots to edit: hollow dots are Bézier handles, dark dots are section ends.
-- **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly), **Ghost copies** (faint copies of the cycles before and after) and **Loop arrow** (points the way the wave carries on from the start). The page remembers them.
+- **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly) and **Ghost copies** (faint copies of the cycles before and after). The page remembers them.
 - **Section strip:** the section numbers (click one to select it), **+ Add section**, **− Remove section** (removes the selected one) and **Scale to fit**. Scale to fit moves the start onto the middle line and makes the wave as large as fits, without changing its shape.
 - **Section panel:** the controls for the selected section.
 - **Fold-away panels** (the page remembers which are open):

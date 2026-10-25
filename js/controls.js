@@ -192,7 +192,7 @@
     try{ navigator.clipboard.writeText(txt).then(done, fallback); }catch(e){ fallback(); }
   });
 
-  // View toggles under the preview: Snap, Ghost copies, Loop arrow (kept per browser).
+  // View toggles under the preview: Snap and Ghost copies (kept per browser).
   var viewBtns = document.querySelectorAll('.viewbar .toggle');
   function showView(){ viewBtns.forEach(function(b){ b.setAttribute('aria-pressed', D.view[b.dataset.view] ? 'true' : 'false'); }); }
   function toggleView(k){ D.view[k] = !D.view[k]; D.saveView(); showView(); D.drawPreview(); }

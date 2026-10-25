@@ -4,10 +4,10 @@
   D.svg = svg;
   D.frozenVB = null;
 
-  // View options, kept per browser: snap to grid, ghost copies of the neighbouring cycles, and the loop arrow.
+  // View options, kept per browser: snap to grid, and ghost copies of the neighbouring cycles.
   var VKEY = 'dial-view-v1';
-  D.view = { snap: false, ghosts: true, arrow: true };
-  try{ var v = JSON.parse(localStorage.getItem(VKEY)); if(v) ['snap', 'ghosts', 'arrow'].forEach(function(k){ if(typeof v[k] === 'boolean') D.view[k] = v[k]; }); }catch(e){}
+  D.view = { snap: false, ghosts: true };
+  try{ var v = JSON.parse(localStorage.getItem(VKEY)); if(v) ['snap', 'ghosts'].forEach(function(k){ if(typeof v[k] === 'boolean') D.view[k] = v[k]; }); }catch(e){}
   D.saveView = function(){ try{ localStorage.setItem(VKEY, JSON.stringify(D.view)); }catch(e){} };
   D.GRID = { x: 0.25, y: 0.1 };  // snap steps: x across the whole wave, heights from the middle line
 
@@ -18,19 +18,6 @@
     else if(s.type === 'sine' || s.type === 'curve'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + dx + s.length * k / 64)+' '+(-D.shapeY(s, g.Y, k / 64)); }
     else d += ' L'+(P[3][0]+dx)+' '+(-P[3][1]);
     return d;
-  }
-  // Which way the wave sets off from the start: a short step into the first section that has any length (or straight
-  // up or down if it starts with a jump).
-  function startDirection(segs){
-    for(var i = 0; i < segs.length; i++){
-      var g = segs[i], s = g.s, dx, dy;
-      if(!(s.length > 0)){ if(s.ey !== g.Y) return [0, s.ey > g.Y ? 1 : -1]; continue; }
-      if(s.type === 'bezier'){ var t = 0.01, u = 1 - t;
-        dx = 3*u*u*t*s.h1x + 3*u*t*t*s.h2x + t*t*t*s.length; dy = u*u*u*g.Y + 3*u*u*t*s.h1y + 3*u*t*t*s.h2y + t*t*t*s.ey - g.Y; }
-      else { dx = s.length * 0.01; dy = D.shapeY(s, g.Y, 0.01) - g.Y; }
-      var n = Math.hypot(dx, dy); if(n > 0) return [dx / n, dy / n];
-    }
-    return [1, 0];
   }
 
   // The selected section is drawn bold with its handles; the others are faded and their handles hidden. Every curve has
@@ -86,13 +73,6 @@
       });
       hits+=hit(P[1][0],P[1][1],i,'h1')+hit(P[2][0],P[2][1],i,'h2');
     });
-    if(D.view.arrow && segs.length){
-      // An arrow at the end, pointing the way the wave sets off again from the start.
-      var dir = startDirection(segs), ex = st.sx + total, ey = st.sy, al = u * 4.5, hx = ex + dir[0] * al, hy = ey + dir[1] * al, hw = u * 1.4;
-      var bx = hx - dir[0] * hw * 1.6, by = hy - dir[1] * hw * 1.6, px = -dir[1] * hw, py = dir[0] * hw;
-      html += '<line x1="'+(ex + dir[0] * u * 1.4)+'" y1="'+(-(ey + dir[1] * u * 1.4))+'" x2="'+bx+'" y2="'+(-by)+'" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"'+ne+'/>';
-      html += '<path d="M'+hx+' '+(-hy)+' L'+(bx + px)+' '+(-(by + py))+' L'+(bx - px)+' '+(-(by - py))+' Z" fill="var(--ink)"/>';
-    }
     // The start is a square that can't be dragged: it always sits at the last end's height, since the wave loops back to it.
     html+='<rect x="'+(st.sx-u)+'" y="'+(-st.sy-u)+'" width="'+(u*2)+'" height="'+(u*2)+'" fill="var(--ink)"/>';
     segs.forEach(function(g, i){
