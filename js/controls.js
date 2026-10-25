@@ -146,7 +146,8 @@
       sec.appendChild(buildRow(s, f));
       if(f.key === 'ey' && locked){
         var ln = document.createElement('p');
-        ln.className = 'note cardnote'; ln.textContent = 'Linked to the start square: the wave loops back to the start, so this is also the start’s height.';
+        ln.className = 'note cardnote'; ln.textContent = 'Linked to the start ■';
+        ln.title = 'The wave loops back to the start, so this end is also the start’s height. Changing it moves the start square.';
         sec.appendChild(ln);
       }
     });

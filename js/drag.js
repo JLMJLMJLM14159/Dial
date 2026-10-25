@@ -26,8 +26,7 @@
     var g = D.sectionGeo()[drag.i], s = D.state.sections[drag.i];
     if(!g || !s) return;
     var rx = d.x - g.X;
-    // A jump's end only moves up and down, a flat section's end only sideways.
-    if(drag.k === 'end'){ if(s.type !== 'jump') D.setKey(s, 'length', rx); if(s.type !== 'flat') D.setKey(s, 'ey', d.y); }
+    if(drag.k === 'end'){ D.setKey(s, 'length', rx); D.setKey(s, 'ey', d.y); }
     else if(drag.k === 'h1'){ D.setKey(s, 'h1x', rx); D.setKey(s, 'h1y', d.y); }
     else if(drag.k === 'h2'){ D.setKey(s, 'h2x', rx); D.setKey(s, 'h2y', d.y); }
     D.save(); D.renderOut();

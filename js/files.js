@@ -85,7 +85,7 @@
       D.state = D.newState();
       D.state.sections.push(D.blank());
       D.render(); nameIn.value = ''; markSaved(); D.resetHistory();
-      status.textContent = 'Started a new wave.' + saved;
+      status.textContent = saved.trim();  // nothing to say unless the old wave was saved first
     });
   });
 

@@ -7,15 +7,17 @@
   // 5 is as far as a handle's height can ever go with the curve still inside -1..1: heights -1, 5, -5, 1 (and mirrored)
   // give the cubic Chebyshev curve, which touches -1 and 1 four times.
   var HYT = 5, NT = function(){ return -HYT; }, PT = function(){ return HYT; };
-  // Each section has a type. Sine, flat and jump sections have no handles and can never go backwards or leave -1..1.
-  var TYPES = [ { key:'bezier', label:'Bézier' }, { key:'sine', label:'Sine' }, { key:'flat', label:'Flat' }, { key:'jump', label:'Jump' } ];
+  // Each section has a type. Sine and line sections have no handles and can never go backwards or leave -1..1.
+  // A line can be level (end y = start y) or an instant jump (length 0); older waves' Flat and Jump sections become lines.
+  var TYPES = [ { key:'bezier', label:'Bézier' }, { key:'sine', label:'Sine' }, { key:'line', label:'Line' } ];
+  var OLD_TYPES = { flat: 'line', jump: 'line' };
   var SMOOTHS = [ { key:'both', label:'Both ends' }, { key:'end', label:'End only' }, { key:'start', label:'Start only' } ];
   var HAS = function(list, key){ return list.some(function(o){ return o.key === key; }); };
   // Handle fields have a fixed slider track (tlo..thi) but a narrower allowed range (lo..hi) that depends on the rest of the section.
   // types lists the section types that show the field.
   var FIELDS = [
-    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true, types:['bezier', 'sine', 'flat'] },
-    { key:'ey',     label:'End y',      lo:N1,  hi:P1, types:['bezier', 'sine', 'jump'] },
+    { key:'length', label:'Length',     lo:function(){ return 0; }, hi:function(){ return Infinity; }, num:true, types:['bezier', 'sine', 'line'] },
+    { key:'ey',     label:'End y',      lo:N1,  hi:P1, types:['bezier', 'sine', 'line'] },
     { key:'h1x',    label:'Handle 1 x', lo:HX('h1x', 0), hi:HX('h1x', 1), tlo:function(){ return 0; }, thi:function(s){ return 4 * s.length / 3; }, hx:true, gap:true, types:['bezier'] },
     { key:'h1y',    label:'Handle 1 y', lo:HY('h1y', 0), hi:HY('h1y', 1), tlo:NT, thi:PT, hy:true, types:['bezier'] },
     { key:'h2x',    label:'Handle 2 x', lo:HX('h2x', 0), hi:HX('h2x', 1), tlo:function(s){ return -s.length / 3; }, thi:function(s){ return s.length; }, hx:true, gap:true, types:['bezier'] },
@@ -115,12 +117,10 @@
     }
     s.h1y = rnd(r1); s.h2y = rnd(r2);
   }
-  // The wave ends at the first point's height so it repeats without a jump. That end height is set by the last section
-  // that isn't Flat, since a Flat section just carries the height before it along.
+  // The wave ends at the first point's height so it repeats without a jump: the last section's end is locked to it.
   function lockSection(){
     var list = D.state.sections;
-    for(var i = list.length - 1; i >= 0; i--) if(list[i].type !== 'flat') return list[i];
-    return null;
+    return list.length ? list[list.length - 1] : null;
   }
   // After a height is changed: the locked end and the first point are one value, so moving the end moves the start.
   // (Moving the start moves the end through refitAll.)
@@ -129,23 +129,19 @@
   }
 
   // Re-check every section after any change: a section's start height is the previous section's end height.
-  // A jump always has length 0, a flat section always ends at its start height, and the locked end matches the first point.
+  // The locked end matches the first point.
   function refitAll(){
     var y = D.state.start.sy, lk = lockSection();
     if(lk) lk.ey = y;
-    D.state.sections.forEach(function(s){
-      if(s.type === 'jump') s.length = 0;
-      if(s.type === 'flat') s.ey = y;
-      fitHandles(s); fitY(s, y); y = s.ey;
-    });
+    D.state.sections.forEach(function(s){ fitHandles(s); fitY(s, y); y = s.ey; });
   }
 
-  // Height along a sine or flat section, u = 0..1 across its length. The sine shapes are parts of a sine wave stretched
+  // Height along a sine or line section, u = 0..1 across its length. The sine shapes are parts of a sine wave stretched
   // between the start and end heights (half a cycle, or a quarter that is smooth at one end), so chained ones give an exact sine.
   function shapeY(s, y0, u){
     var k;
-    if(s.type === 'flat') return y0;
-    if(s.smooth === 'end') k = Math.sin(Math.PI * u / 2);
+    if(s.type === 'line') k = u;
+    else if(s.smooth === 'end') k = Math.sin(Math.PI * u / 2);
     else if(s.smooth === 'start') k = 1 - Math.cos(Math.PI * u / 2);
     else k = (1 - Math.cos(Math.PI * u)) / 2;
     return y0 + (s.ey - y0) * k;
@@ -160,11 +156,8 @@
     else h = [1 / 3, 1 / 3, 2 / 3, 2 / 3];
     s.h1x = rnd(h[0] * L); s.h1y = rnd(y0 + h[1] * dy); s.h2x = rnd(h[2] * L); s.h2y = rnd(y0 + h[3] * dy);
   }
-  // A jump remembers the length it had, so switching back restores it.
   function setType(s, type){
     if(s.type === type) return;
-    if(type === 'jump') s.lastLength = s.length;
-    else if(s.type === 'jump') s.length = s.lastLength > 0 ? s.lastLength : 5;
     if(type === 'bezier') matchHandles(s, startYOf(s));
     s.type = type;
     refitAll();
@@ -229,6 +222,7 @@
       if(s && Array.isArray(s.sections)) s.sections.forEach(function(x){
         if(!x) return;
         if(typeof x.ey !== 'number') x.ey = 0;
+        if(OLD_TYPES[x.type]) x.type = OLD_TYPES[x.type];  // a Flat already ends at its start height, a Jump has length 0
         if(!HAS(TYPES, x.type)) x.type = 'bezier';
         if(!HAS(SMOOTHS, x.smooth)) x.smooth = 'both';
       });
@@ -253,10 +247,8 @@
     return {
       start: { y: state.start.sy },
       sections: state.sections.map(function(s, i){
-        // Only what the type uses: a jump has no length, a flat section's end height is its start height.
-        var o = { section: i + 1, type: s.type };
-        if(s.type !== 'jump') o.length = s.length;
-        if(s.type !== 'flat') o.end = { y: s.ey };
+        // Only what the type uses.
+        var o = { section: i + 1, type: s.type, length: s.length, end: { y: s.ey } };
         if(s.type === 'sine') o.smooth = s.smooth;
         if(s.type === 'bezier'){ o.handle1 = { x: s.h1x, y: s.h1y }; o.handle2 = { x: s.h2x, y: s.h2y }; }
         return o;
@@ -265,8 +257,9 @@
   }
 
   // A saved wave file: the recorded values with a format name, version and the wave's name, so it can be recognised,
-  // opened again and shared. Version 1 is this layout; a later version can add fields without breaking old files.
-  var FORMAT = 'dial-wave', VERSION = 1;
+  // opened again and shared. A later version can add fields without breaking old files. Version 2 replaced the Flat and
+  // Jump types with Line (version 1 files still open: their Flat and Jump sections become lines).
+  var FORMAT = 'dial-wave', VERSION = 2;
   function fileData(){
     var snap = snapshot();
     return { format: FORMAT, version: VERSION, name: D.state.name || '', start: snap.start, sections: snap.sections };
@@ -280,12 +273,12 @@
     for(var i = 0; i < o.sections.length; i++){
       var f = o.sections[i];
       if(!f || typeof f !== 'object') return null;
-      var type = HAS(TYPES, f.type) ? f.type : (f.handle1 ? 'bezier' : null);  // recorded values from before types were added
+      var type = HAS(TYPES, f.type) ? f.type : OLD_TYPES[f.type] || (f.handle1 ? 'bezier' : null);  // handles only: from before types
       if(!type) return null;
       var s = blank(y);
       s.id += '-' + i; s.type = type; s.smooth = HAS(SMOOTHS, f.smooth) ? f.smooth : 'both';
-      if(type === 'jump'){ s.length = 0; s.lastLength = 5; } else s.length = num(f.length, 5);
-      s.ey = type === 'flat' ? y : num(f.end && f.end.y, y);
+      s.length = f.type === 'jump' ? 0 : num(f.length, 5);
+      s.ey = f.type === 'flat' ? y : num(f.end && f.end.y, y);
       if(type === 'bezier'){
         s.h1x = num(f.handle1 && f.handle1.x, s.length / 3); s.h1y = num(f.handle1 && f.handle1.y, y);
         s.h2x = num(f.handle2 && f.handle2.x, 2 * s.length / 3); s.h2y = num(f.handle2 && f.handle2.y, s.ey);
