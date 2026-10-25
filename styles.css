@@ -1,30 +1,51 @@
 :root{
-  --bg:#f3f4f1; --surface:#ffffff; --ink:#1d2321; --muted:#63706b; --line:#d9ddd8; --accent:#0f7b6c; --accent-ink:#ffffff; --code:#eceee9; --c1:#0f7b6c; --c2:#7a5cc2;
+  --bg:#f3f4f1; --surface:#ffffff; --ink:#1d2321; --muted:#63706b; --line:#d9ddd8; --accent:#0f7b6c; --accent-ink:#ffffff; --code:#eceee9; --c1:#0f7b6c; --c2:#7a5cc2; color-scheme:light;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){--bg:#141a18; --surface:#1d2523; --ink:#e8eeeb; --muted:#93a19b; --line:#2f3b38; --accent:#3cc2ad; --accent-ink:#0b1f1b; --code:#111715; --c1:#3cc2ad; --c2:#b39bf0; color-scheme:dark}
 }
 :root[data-theme="dark"]{--bg:#141a18; --surface:#1d2523; --ink:#e8eeeb; --muted:#93a19b; --line:#2f3b38; --accent:#3cc2ad; --accent-ink:#0b1f1b; --code:#111715; --c1:#3cc2ad; --c2:#b39bf0; color-scheme:dark}
+/* Colour themes (data-pal on <html>; no attribute = Teal, above). Each has a light and a dark version; data-theme picks
+   light or dark, and without it the device's setting decides. The two curve colours (--c1, --c2) are checked to stay
+   distinguishable for colour-blind viewers. */
+:root[data-pal="studio"]{--bg:#f5f4f0; --surface:#ffffff; --ink:#22201c; --muted:#6b675f; --line:#dedad2; --accent:#b45309; --accent-ink:#ffffff; --code:#eeece6; --c1:#b45309; --c2:#2563eb; color-scheme:light}
+@media (prefers-color-scheme: dark){ :root[data-pal="studio"]:not([data-theme="light"]){--bg:#121212; --surface:#1c1c1c; --ink:#ededed; --muted:#9a9a9a; --line:#2e2e2e; --accent:#f59e0b; --accent-ink:#1a1205; --code:#161616; --c1:#f59e0b; --c2:#60a5fa; color-scheme:dark} }
+:root[data-pal="studio"][data-theme="dark"]{--bg:#121212; --surface:#1c1c1c; --ink:#ededed; --muted:#9a9a9a; --line:#2e2e2e; --accent:#f59e0b; --accent-ink:#1a1205; --code:#161616; --c1:#f59e0b; --c2:#60a5fa; color-scheme:dark}
+:root[data-pal="ocean"]{--bg:#f1f5f9; --surface:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#dbe3ec; --accent:#1d4ed8; --accent-ink:#ffffff; --code:#e8eef5; --c1:#1d4ed8; --c2:#db2777; color-scheme:light}
+@media (prefers-color-scheme: dark){ :root[data-pal="ocean"]:not([data-theme="light"]){--bg:#0b1220; --surface:#111a2e; --ink:#e2e8f0; --muted:#94a3b8; --line:#23304a; --accent:#60a5fa; --accent-ink:#0b1220; --code:#0d1526; --c1:#60a5fa; --c2:#f472b6; color-scheme:dark} }
+:root[data-pal="ocean"][data-theme="dark"]{--bg:#0b1220; --surface:#111a2e; --ink:#e2e8f0; --muted:#94a3b8; --line:#23304a; --accent:#60a5fa; --accent-ink:#0b1220; --code:#0d1526; --c1:#60a5fa; --c2:#f472b6; color-scheme:dark}
+:root[data-pal="synthwave"]{--bg:#faf5ff; --surface:#ffffff; --ink:#2a1640; --muted:#6e5a8a; --line:#e7dcf5; --accent:#c2187a; --accent-ink:#ffffff; --code:#f3eafb; --c1:#c2187a; --c2:#2563eb; color-scheme:light}
+@media (prefers-color-scheme: dark){ :root[data-pal="synthwave"]:not([data-theme="light"]){--bg:#120c1f; --surface:#1c1430; --ink:#f3eaff; --muted:#a99bc9; --line:#34285a; --accent:#ff4fa3; --accent-ink:#1a0613; --code:#160f27; --c1:#ff4fa3; --c2:#29d3ff; color-scheme:dark} }
+:root[data-pal="synthwave"][data-theme="dark"]{--bg:#120c1f; --surface:#1c1430; --ink:#f3eaff; --muted:#a99bc9; --line:#34285a; --accent:#ff4fa3; --accent-ink:#1a0613; --code:#160f27; --c1:#ff4fa3; --c2:#29d3ff; color-scheme:dark}
+:root[data-pal="paper"]{--bg:#f4ecdf; --surface:#fbf6ee; --ink:#3b2f22; --muted:#7a6a55; --line:#e3d6c2; --accent:#a0522d; --accent-ink:#fffaf2; --code:#efe5d5; --c1:#a0522d; --c2:#335c99; color-scheme:light}
+@media (prefers-color-scheme: dark){ :root[data-pal="paper"]:not([data-theme="light"]){--bg:#1e1912; --surface:#28211a; --ink:#efe4d2; --muted:#b3a28a; --line:#3d3327; --accent:#e0915a; --accent-ink:#1e1912; --code:#231d16; --c1:#e0915a; --c2:#8fbf9f; color-scheme:dark} }
+:root[data-pal="paper"][data-theme="dark"]{--bg:#1e1912; --surface:#28211a; --ink:#efe4d2; --muted:#b3a28a; --line:#3d3327; --accent:#e0915a; --accent-ink:#1e1912; --code:#231d16; --c1:#e0915a; --c2:#8fbf9f; color-scheme:dark}
+:root[data-pal="contrast"]{--bg:#ffffff; --surface:#ffffff; --ink:#000000; --muted:#3d3d3d; --line:#8a8a8a; --accent:#000000; --accent-ink:#ffffff; --code:#f0f0f0; --c1:#000000; --c2:#0050d0; color-scheme:light}
+@media (prefers-color-scheme: dark){ :root[data-pal="contrast"]:not([data-theme="light"]){--bg:#000000; --surface:#000000; --ink:#ffffff; --muted:#cfcfcf; --line:#7a7a7a; --accent:#ffd400; --accent-ink:#000000; --code:#111111; --c1:#ffffff; --c2:#ffd400; color-scheme:dark} }
+:root[data-pal="contrast"][data-theme="dark"]{--bg:#000000; --surface:#000000; --ink:#ffffff; --muted:#cfcfcf; --line:#7a7a7a; --accent:#ffd400; --accent-ink:#000000; --code:#111111; --c1:#ffffff; --c2:#ffd400; color-scheme:dark}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 
 /* Toolbar: the controls used all the time. Pinned to the top on wider screens; on phones it scrolls away. */
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
 @media (min-width:700px){.toolbar{position:sticky;top:0;z-index:10}}
 .brand{font-size:1.15rem;margin:0;letter-spacing:-.01em}
 .tb-group{display:flex;align-items:center;gap:6px}
-.toolbar button{padding:6px 12px}
+.toolbar button{padding:6px 10px}
+.toolbar select{padding:5px 6px}
 #undo,#redo{font-size:1.1rem;line-height:1;padding:6px 10px}
-#wave-name{width:150px}
+#wave-name{width:120px}
 .tb-label{color:var(--muted);font-size:.9rem}
 .toolbar input[type=range]{height:24px}
-.toolbar .tb-freq{width:100px}
-.toolbar .tb-vol{width:70px}
-.toolbar .tb-num{width:76px}
+.toolbar .tb-freq{width:84px}
+.toolbar .tb-vol{width:56px}
+.toolbar .tb-num{width:90px}
 .toolbar .tb-small{width:60px}
+/* Below 1440px the "Freq" and "Vol" words are hidden (still read out by screen readers); Hz and % make them clear. */
+@media (max-width:1439px){ .tb-label.tb-word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} }
 .tb-note{color:var(--muted);font-size:.9rem;min-width:2.6em}
 .unsaved{color:var(--accent);font-weight:700;font-size:1.2rem;margin-left:-2px}
 /* Phones: the name box gets its own row, with Save, Open, Presets and New below it. */
@@ -35,7 +56,8 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
   .toolbar #wave-name{flex:1 1 calc(100% - 24px);width:auto;min-width:0}
   .tb-play{flex:1 1 100%;min-width:0;order:2}
   .tb-file{order:1}
-  .toolbar > .tb-group:last-child{order:3}  /* volume; undo and redo stay up beside the title */
+  .tb-volgroup{order:3}  /* volume; undo and redo stay up beside the title */
+  .tb-theme{order:4}
   .toolbar .tb-freq{flex:1 1 40px;width:auto;min-width:40px}
   .toolbar .tb-num{width:72px}
 }

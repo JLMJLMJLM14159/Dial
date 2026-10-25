@@ -61,6 +61,7 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
   - Save, Open, **Presets** (Sine, Saw, Triangle or Square to start from), New.
   - Undo and Redo.
   - Play, Frequency (slider from 20 to 2000 Hz, box from 20 to 20,000 Hz, with the nearest note) and Volume.
+  - **Theme** (Teal, Studio, Ocean, Synthwave, Paper, Contrast) and **mode** (Auto follows your device, or Light or Dark). Every theme has its own light and dark version, and its two curve colours are checked to stay distinguishable for colour-blind viewers. Remembered per browser.
 - **Preview:**
   - Click a section's curve to select it. The selected section is drawn bold with its handles.
   - Drag dots to edit: hollow dots are Bézier handles, dark dots are section ends.
@@ -146,8 +147,9 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `js/harmonics.js` | The harmonics chart |
 | `js/files.js` | Save, Open, New, unsaved-changes tracking |
 | `js/history.js` | Undo and redo |
+| `js/theme.js` | Colour theme and light/dark mode menus |
 | `js/main.js` | Start-up, and turning on offline support |
 | `sw.js` | Offline support: keeps a copy of the files, always trying the network first |
 | `manifest.webmanifest`, `icons/` | App name, colours and icons, for installing |
 
-The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, and the view buttons under `dial-view-v1`.
+The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, the view buttons under `dial-view-v1`, and the theme under `dial-theme-v1`.
