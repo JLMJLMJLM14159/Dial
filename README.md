@@ -157,7 +157,7 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `styles.css` | Styles, including light and dark themes |
 | `js/state.js` | Section types, rules (never backwards, inside the band, closed loop), saving to the browser, file format, sampling one cycle |
 | `js/preview.js` | Draws the preview |
-| `js/controls.js` | Section strip, section panel, sliders and number boxes, JSON panel |
+| `js/controls.js` | Section strip, section editor, sliders and number boxes, the ⋯ menu and pop-over windows, keyboard editing |
 | `js/drag.js` | Dragging dots in the preview |
 | `js/reference.js` | The reference trace |
 | `js/synth.js` | Playing (Play button, computer keyboard, MIDI), WAV export |
