@@ -1,9 +1,9 @@
 // Harmonics view: a column chart of how strong each of the first 32 harmonics of the wave is (harmonic n vibrates n times
 // per cycle, so at a 220 Hz note the 3rd is at 660 Hz), as a share of the strongest one. It's only for looking: the
-// sections stay as they are. Like the synth, it leaves out the average height. Worked out only while its panel is open.
+// sections stay as they are. Like the synth, it leaves out the average height. Always on screen, beside the editor.
 (function(D){
-  var H = 32, N = 2048, HEIGHT = 170, PAD = { l: 40, r: 8, t: 10, b: 24 };
-  var panel = document.getElementById('panel-harm'), box = document.getElementById('harm-chart'), tip = document.getElementById('harm-tip');
+  var H = 32, N = 2048, PAD = { l: 40, r: 8, t: 10, b: 24 };
+  var box = document.getElementById('harm-chart'), tip = document.getElementById('harm-tip');
   var table = document.getElementById('harm-table'), tableBtn = document.getElementById('harm-numbers'), freqN = document.getElementById('freq-n');
   var mags = [], pending = false;
 
@@ -18,7 +18,7 @@
 
   // Columns at most 24px wide with a gap between them, rounded at the top and square at the baseline; hairline gridlines.
   function draw(){
-    var w = box.clientWidth; if(!w) return;
+    var w = box.clientWidth, HEIGHT = Math.max(90, box.clientHeight || 130); if(!w) return;  // the chart fills its box (sized in CSS)
     var pw = w - PAD.l - PAD.r, ph = HEIGHT - PAD.t - PAD.b, slot = pw / H, bw = Math.max(1, Math.min(24, slot - 2));
     var base = PAD.t + ph, svg = '';
     [0, 0.5, 1].forEach(function(v){
@@ -42,12 +42,13 @@
   }
 
   D.harmonicsChanged = function(){
-    if(!panel.open || pending) return;
+    if(pending) return;
     pending = true;
     requestAnimationFrame(function(){ pending = false; mags = compute(); draw(); });
   };
-  panel.addEventListener('toggle', D.harmonicsChanged);
-  window.addEventListener('resize', function(){ if(panel.open && mags.length) draw(); });
+  // Redraw when the chart's box changes size (window resized, layout switching between one screen and stacked).
+  if(window.ResizeObserver) new ResizeObserver(function(){ if(mags.length) draw(); }).observe(box);
+  else window.addEventListener('resize', function(){ if(mags.length) draw(); });
   freqN.addEventListener('input', function(){ if(!table.hidden) fillTable(); });
 
   // Hover (or touch) a column for its number, frequency at the current pitch, and strength.

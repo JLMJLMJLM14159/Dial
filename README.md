@@ -58,21 +58,24 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 
 ## The page
 
+On laptop and desktop screens (at least 900 × 640 pixels) everything fits on one screen with no scrolling: the toolbar on top, the preview with its strip on the left, the section editor and Harmonics on the right, and the piano along the bottom. Only the section editor scrolls (inside itself) if a screen is too short for it. Smaller screens and phones get the same parts stacked, and scroll.
+
 - **Toolbar:**
   - The wave's name, with a `*` while there are unsaved changes (also shown in the browser tab).
   - Save, **Link** (copies a share link, see below), Open, **Presets** (Sine, Saw, Triangle or Square to start from), New.
   - Undo and Redo.
   - Play, Frequency (slider from 20 to 2000 Hz, box from 20 to 20,000 Hz, with the nearest note) and Volume.
+  - **⋯ (More):** a menu that opens **Export**, **Data (JSON)** and **Help**, each in its own pop-over window (closed with ×, Esc or a click outside it).
   - **Theme** (Teal, Studio, Ocean, Synthwave, Paper, Contrast) and **mode** (Auto follows your device, or Light or Dark). Every theme has its own light and dark version, and its two curve colours are checked to stay distinguishable for colour-blind viewers. Remembered per browser.
 - **Preview:**
   - Click a section's curve to select it. The selected section is drawn bold with its handles.
   - Drag dots to edit: hollow dots are Bézier handles, dark dots are section ends.
 - **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly) **Ghost copies** (faint copies of the cycles before and after), **Reference…** (load a single-cycle WAV, at most 4,096 samples, or another `.dial.json`; longer WAVs are refused with a message asking for them to be shortened to one cycle; it's drawn as a faint highlighter line stretched across one cycle, to trace over; × clears it; kept in the browser but never saved with your wave) and **?** (the keyboard shortcut list). The page remembers them. On touch screens the dots and their grab areas are enlarged to fingertip size.
 - **Section strip:** the section numbers (click one to select it), **+ Add section**, **− Remove section** (removes the selected one) and **Scale to fit**. Scale to fit moves the start onto the middle line and makes the wave as large as fits, without changing its shape.
-- **Section panel:** the controls for the selected section.
-- **Fold-away panels** (the page remembers which are open):
-  - **Harmonics:** a view-only chart of the first 32 harmonics, each as a share of the strongest, with a table of numbers.
-  - **Keyboard and MIDI:** a two-octave **on-screen piano** (press, tap or slide across the keys; − and + change octave), and the computer keys A W S E D F T G Y H U J K O L P ; with Z and X to change octave. Keys light up while their note sounds. **Connect MIDI keyboard** works in Chrome, Edge and Firefox (not Safari); its sustain pedal holds notes and its pitch-bend wheel bends them by up to 2 semitones.
+- **Section editor:** the controls for the selected section.
+- **Harmonics:** a view-only chart of the first 32 harmonics, each as a share of the strongest, with a table of numbers. It fills the space under the section editor.
+- **Piano** along the bottom: two octaves (press, tap or slide across the keys; − and + change octave), plus the computer keys A W S E D F T G Y H U J K O L P ; with Z and X to change octave. Keys light up while their note sounds. **Connect MIDI** works in Chrome, Edge and Firefox (not Safari); its sustain pedal holds notes and its pitch-bend wheel bends them by up to 2 semitones, and the bar shows which keyboard is connected.
+- **Pop-over windows** from ⋯:
   - **Export:** **Download cycle (WAV)** is one cycle, 2048 samples, 24-bit, exactly as drawn, for wavetable synths and samplers such as Vital or Serum. **Download note (WAV)** is the current frequency held for a set length (up to 60 seconds), to drop onto a DAW track.
   - **Data (JSON):** the recorded values, with Copy JSON.
   - **Help.**
@@ -166,4 +169,4 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `sw.js` | Offline support: keeps a copy of the files, always trying the network first |
 | `manifest.webmanifest`, `icons/` | App name, colours and icons, for installing |
 
-The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, the view buttons under `dial-view-v1`, the theme under `dial-theme-v1`, and the reference trace under `dial-ref-v1`.
+The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, the view buttons under `dial-view-v1`, the theme under `dial-theme-v1`, and the reference trace under `dial-ref-v1`.

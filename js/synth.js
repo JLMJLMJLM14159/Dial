@@ -12,7 +12,7 @@
   var freqR = document.getElementById('freq-r'), freqN = document.getElementById('freq-n'), noteName = document.getElementById('notename');
   var volR = document.getElementById('vol-r'), volN = document.getElementById('vol-n');
   var octEl = document.getElementById('oct'), midiBtn = document.getElementById('midi'), midiStatus = document.getElementById('midistatus');
-  var lenN = document.getElementById('len-n'), noteBtn = document.getElementById('notewav'), noteStatus = document.getElementById('notestatus');
+  var lenN = document.getElementById('len-n'), noteBtn = document.getElementById('notewav');
 
   var NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
   function mtof(m){ return 440 * Math.pow(2, (m - 69) / 12); }
@@ -131,7 +131,7 @@
   // also takes over from a focused button (which Space would otherwise press); Enter still presses buttons.
   function spaceIsFree(e){
     var t = e.target;
-    if(document.getElementById('ask').open || document.getElementById('keys-help').open || document.getElementById('notice').open || t.isContentEditable || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return false;
+    if(document.querySelector('dialog[open]') || t.isContentEditable || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return false;
     return !(t.tagName === 'INPUT' && /^(text|number|search)$/.test(t.type));
   }
   window.addEventListener('keydown', function(e){
@@ -231,16 +231,16 @@
   }
   midiBtn.addEventListener('click', function(){
     ensureCtx();  // the click also lets the page make sound
-    if(!navigator.requestMIDIAccess){ midiStatus.textContent = 'This browser doesn’t support MIDI. Try Chrome, Edge or Firefox.'; return; }
+    if(!navigator.requestMIDIAccess){ D.popup('MIDI isn’t available', 'This browser doesn’t support MIDI keyboards. Try Chrome, Edge or Firefox.'); return; }
     midiStatus.textContent = 'Connecting…';
     navigator.requestMIDIAccess().then(function(m){
       function bind(){
         var names = [];
         m.inputs.forEach(function(inp){ inp.onmidimessage = onMidi; names.push(inp.name); });
-        midiStatus.textContent = names.length ? 'Connected: ' + names.join(', ') : 'No MIDI keyboard found. Plug one in and it connects by itself.';
+        midiStatus.textContent = names.length ? 'MIDI: ' + names.join(', ') : 'No MIDI keyboard found (plug one in and it connects by itself)';  // the connection's state, not a message
       }
       bind(); m.onstatechange = bind;
-    }, function(){ midiStatus.textContent = 'MIDI access was blocked. Allow it in the browser’s site settings and try again.'; });
+    }, function(){ midiStatus.textContent = ''; D.popup('MIDI access was blocked', 'Allow MIDI in the browser’s site settings, then press Connect MIDI again.'); });
   });
 
   // One cycle as a 24-bit mono WAV, 2048 samples, exactly as drawn (not centred), for loading into a wavetable synth or sampler.
@@ -292,15 +292,14 @@
   }
   noteBtn.addEventListener('click', function(){
     var freq = prefs.freq, secs = prefs.len;
-    noteStatus.textContent = 'Making the note…';
     renderNote(freq, secs, 44100).then(function(r){
       var a = document.createElement('a');
       a.href = URL.createObjectURL(wavBlob(r.y, 44100));
       a.download = 'dial-note-' + noteOf(Math.round(69 + 12 * Math.log2(freq / 440))).replace('♯', 's') + '-' + freq + 'Hz-' + secs + 's.wav';
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
-      noteStatus.textContent = r.peak > 1 ? 'Done. It was turned down so its loudest point fits in the file.' : 'Done.';
-    }, function(){ noteStatus.textContent = 'Sorry, the note couldn’t be made in this browser.'; });
+      if(r.peak > 1) D.popup('The note was turned down', 'Centred, this wave would go past full scale, so the note was turned down until its loudest point fits in the file.');
+    }, function(){ D.popup('The note couldn’t be made', 'This browser couldn’t render the note. Try an up-to-date Chrome, Edge, Firefox or Safari.'); });
   });
 
   setFreq(prefs.freq); setVol(prefs.vol); buildPiano();

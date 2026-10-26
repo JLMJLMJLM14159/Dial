@@ -223,7 +223,7 @@
   // Delete or Backspace removes it, and Q turns snapping on or off.
   function editKeysFree(e){
     var t = e.target;
-    if(document.getElementById('ask').open || keysHelp.open || document.getElementById('notice').open || t.isContentEditable) return false;
+    if(document.querySelector('dialog[open]') || !moreMenu.hidden || t.isContentEditable) return false;
     return !(t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA');
   }
   window.addEventListener('keydown', function(e){
@@ -239,11 +239,23 @@
     e.preventDefault();
   });
 
-  // Remember which fold-away panels are left open, in this browser only.
-  document.querySelectorAll('details.panel').forEach(function(d){
-    try{ var v = localStorage.getItem('dial-open-' + d.id); if(v === '1') d.open = true; else if(v === '0') d.open = false; }catch(e){}
-    d.addEventListener('toggle', function(){ try{ localStorage.setItem('dial-open-' + d.id, d.open ? '1' : '0'); }catch(e){} });
+  // ⋯ More in the toolbar: a small menu whose items each open a pop-over window (Export, Data, Help).
+  var moreBtn = document.getElementById('more-btn'), moreMenu = document.getElementById('more-menu');
+  function setMenu(open){
+    moreMenu.hidden = !open; moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if(open){ var r = moreBtn.getBoundingClientRect(); moreMenu.style.top = (r.bottom + 6) + 'px'; moreMenu.style.left = Math.max(8, Math.min(window.innerWidth - moreMenu.offsetWidth - 8, r.left)) + 'px'; moreMenu.querySelector('button').focus(); }
+  }
+  moreBtn.addEventListener('click', function(e){ e.stopPropagation(); setMenu(moreMenu.hidden); });
+  moreMenu.querySelectorAll('[data-open]').forEach(function(b){
+    b.addEventListener('click', function(){ setMenu(false); document.getElementById(b.dataset.open).showModal(); });
   });
+  document.addEventListener('click', function(e){ if(!moreMenu.hidden && !moreMenu.contains(e.target)) setMenu(false); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && !moreMenu.hidden){ setMenu(false); moreBtn.focus(); } });
+  // A click on the dimmed area around a pop-over window closes it.
+  document.querySelectorAll('dialog.sheet').forEach(function(d){
+    d.addEventListener('click', function(e){ if(e.target === d){ var r = d.getBoundingClientRect(); if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close(); } });
+  });
+
 
   D.renderOut = renderOut; D.setKey = setKey; D.render = render;
 })(window.Dial = window.Dial || {});
