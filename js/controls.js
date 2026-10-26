@@ -215,7 +215,7 @@
   // Delete or Backspace removes it, and Q turns snapping on or off.
   function editKeysFree(e){
     var t = e.target;
-    if(document.getElementById('ask').open || keysHelp.open || t.isContentEditable) return false;
+    if(document.getElementById('ask').open || keysHelp.open || document.getElementById('notice').open || t.isContentEditable) return false;
     return !(t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA');
   }
   window.addEventListener('keydown', function(e){

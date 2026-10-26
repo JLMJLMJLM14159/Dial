@@ -87,6 +87,7 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 .pkey.on{background:var(--accent)}
 .pkey.white.on span{color:var(--accent-ink)}
 .viewbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.viewnote{margin:6px 0 0;font-size:.82rem}
 .viewbar .toggle{padding:4px 10px;font-size:.88rem;color:var(--muted)}
 .toggle[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
 kbd{font:inherit;font-size:.75rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:2px;color:var(--muted)}

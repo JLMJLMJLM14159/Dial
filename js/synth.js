@@ -131,7 +131,7 @@
   // also takes over from a focused button (which Space would otherwise press); Enter still presses buttons.
   function spaceIsFree(e){
     var t = e.target;
-    if(document.getElementById('ask').open || document.getElementById('keys-help').open || t.isContentEditable || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return false;
+    if(document.getElementById('ask').open || document.getElementById('keys-help').open || document.getElementById('notice').open || t.isContentEditable || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return false;
     return !(t.tagName === 'INPUT' && /^(text|number|search)$/.test(t.type));
   }
   window.addEventListener('keydown', function(e){
