@@ -49,7 +49,9 @@
     markSaved();
     return name;
   }
-  document.getElementById('save').addEventListener('click', function(){ status.textContent = 'Saved as ' + saveWave() + '.'; });
+  // The toolbar buttons never write to the status line at the top (the person asked for that); real problems that would
+  // otherwise go unnoticed get a popup instead.
+  document.getElementById('save').addEventListener('click', function(){ saveWave(); });
 
   // Runs the replacing step once any unsaved changes are dealt with; returns a note about the save, if one was made.
   function afterAsking(what, replace){
@@ -66,16 +68,16 @@
       var o = null;
       try{ o = JSON.parse(txt); }catch(e){}
       var st = o && D.fromFile(o);
-      if(!st){ status.textContent = file.name + ' isn’t a saved wave, so nothing was opened.'; return; }
+      if(!st){ D.popup('That file couldn’t be opened', file.name + ' isn’t a saved wave, so nothing was opened.'); return; }
       if(!st.name) st.name = file.name.replace(/(\.dial)?\.json$/i, '');
       afterAsking('open “' + st.name + '”', function(saved){
         var r = D.loadWave(st);
         D.save(); D.render(); nameIn.value = D.state.name || ''; D.showUnsaved(); D.resetHistory();
-        status.textContent = 'Opened “' + D.state.name + '”.' + saved +
-          (r.adjusted ? ' Some values were adjusted to fit the editor’s rules.' : '') +
-          (r.newer ? ' It was saved by a newer version of this page, so some parts may be missing.' : '');
+        var warn = (r.adjusted ? 'Some values were adjusted to fit the editor’s rules. ' : '') +
+          (r.newer ? 'It was saved by a newer version of this page, so some parts may be missing.' : '');
+        if(warn) D.popup('Opened “' + D.state.name + '”', warn.trim());
       });
-    }, function(){ status.textContent = 'That file couldn’t be read.'; });
+    }, function(){ D.popup('That file couldn’t be opened', 'The file couldn’t be read.'); });
   }
   document.getElementById('open').addEventListener('click', function(){ picker.click(); });
 
@@ -97,7 +99,6 @@
     afterAsking('open the ' + p.name + ' preset', function(saved){
       D.loadWave(D.fromFile(p));
       D.save(); D.render(); nameIn.value = D.state.name; D.showUnsaved(); D.resetHistory();
-      status.textContent = saved.trim();
     });
   });
   picker.addEventListener('change', function(){ openFile(picker.files[0]); picker.value = ''; });
@@ -107,7 +108,6 @@
       D.state = D.newState();
       D.state.sections.push(D.blank());
       D.render(); nameIn.value = ''; markSaved(); D.resetHistory();
-      status.textContent = saved.trim();  // nothing to say unless the old wave was saved first
     });
   });
 
@@ -153,8 +153,7 @@
   }
   document.getElementById('link').addEventListener('click', function(){
     D.makeLink().then(function(url){
-      return copyText(url).then(function(){ status.textContent = 'Link copied (' + url.length + ' characters). Anyone who opens it gets this wave.'; },
-        function(){ status.textContent = 'Couldn’t copy automatically. Here’s the link: ' + url; });
+      return copyText(url).catch(function(){ D.popup('Couldn’t copy the link', 'Copy it from here instead: ' + url); });
     });
   });
   // Opening a link (on start-up, or when a new link is pasted into this tab): load it like opening a file, then tidy the

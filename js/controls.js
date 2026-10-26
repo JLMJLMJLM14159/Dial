@@ -205,6 +205,14 @@
   viewBtns.forEach(function(b){ b.addEventListener('click', function(){ toggleView(b.dataset.view); }); });
   showView();
 
+  // A popup for things that need saying (the toolbar buttons don't use the status line at the top).
+  var notice = document.getElementById('notice');
+  D.popup = function(title, msg){
+    document.getElementById('notice-title').textContent = title;
+    document.getElementById('notice-text').textContent = msg;
+    if(notice.showModal){ if(!notice.open) notice.showModal(); } else window.alert(title + '\n\n' + msg);
+  };
+
   // The shortcut cheat sheet: ? or the ? button under the preview; Esc or Close shuts it.
   var keysHelp = document.getElementById('keys-help');
   function showKeys(){ if(keysHelp.showModal && !keysHelp.open) keysHelp.showModal(); }

@@ -24,8 +24,6 @@
     }
     return null;
   }
-  var notice = document.getElementById('notice'), noticeText = document.getElementById('notice-text');
-  function popup(msg){ noticeText.textContent = msg; if(notice.showModal) notice.showModal(); else window.alert(msg); }
   // Squeeze any number of samples into N points (linear interpolation).
   function resample(data){
     var out = new Float32Array(N), n = data.length;
@@ -54,7 +52,7 @@
       var frames = wavFrames(buf);
       if(frames === null) throw new Error('not');
       if(frames > MAX){
-        popup(name + ' is ' + frames.toLocaleString() + ' samples long, which is more than one cycle. A reference WAV must be a single cycle of at most ' + MAX.toLocaleString() + ' samples (2,048 is the usual size). Please shorten it to one cycle first, for example in an audio editor, then load it again.');
+        D.popup('That WAV is too long', name + ' is ' + frames.toLocaleString() + ' samples long, which is more than one cycle. A reference WAV must be a single cycle of at most ' + MAX.toLocaleString() + ' samples (2,048 is the usual size). Please shorten it to one cycle first, for example in an audio editor, then load it again.');
         status.textContent = '';
         return;
       }
