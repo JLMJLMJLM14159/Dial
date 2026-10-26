@@ -30,20 +30,23 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",syst
 main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 
 /* Toolbar: the controls used all the time. Pinned to the top on wider screens; on phones it scrolls away. */
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
 @media (min-width:700px){.toolbar{position:sticky;top:0;z-index:10}}
 .brand{font-size:1.15rem;margin:0;letter-spacing:-.01em}
 .tb-group{display:flex;align-items:center;gap:6px}
-.toolbar button{padding:6px 10px}
+.toolbar button{padding:6px 8px}
 .toolbar select{padding:5px 6px}
 #undo,#redo{font-size:1.1rem;line-height:1;padding:6px 10px}
-#wave-name{width:120px}
+#wave-name{width:112px}
 .tb-label{color:var(--muted);font-size:.9rem}
 .toolbar input[type=range]{height:24px}
-.toolbar .tb-freq{width:84px}
-.toolbar .tb-vol{width:56px}
-.toolbar .tb-num{width:90px}
+.toolbar .tb-freq{width:64px}
+.toolbar .tb-vol{width:48px}
+.toolbar .tb-num{width:84px}
 .toolbar .tb-small{width:60px}
+/* No spinner arrows on the toolbar's number boxes (Chrome keeps room for them even when hidden); arrow keys still work. */
+.toolbar input[type=number]{-moz-appearance:textfield;appearance:textfield}
+.toolbar input[type=number]::-webkit-inner-spin-button,.toolbar input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 /* Below 1440px the "Freq" and "Vol" words are hidden (still read out by screen readers); Hz and % make them clear. */
 @media (max-width:1439px){ .tb-label.tb-word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap} }
 .tb-note{color:var(--muted);font-size:.9rem;min-width:2.6em}

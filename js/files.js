@@ -111,6 +111,76 @@
     });
   });
 
+  // Share links: the whole wave (the same data as a saved file) is compressed and put after "#w=" in the address, so no
+  // server is involved and the part after # never leaves the browser. "#w=1." means compressed (deflate), "#w=0." plain;
+  // the number lets the link format change later without breaking old links. A copy opened from disk links to the
+  // online site, since a link to a file on one computer would be no use to anyone else.
+  var ONLINE = 'https://jlmjlmjlm14159.github.io/Dial/';
+  function toB64(bytes){
+    var s = '', i;
+    for(i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function fromB64(t){
+    var s = atob(t.replace(/-/g, '+').replace(/_/g, '/')), bytes = new Uint8Array(s.length);
+    for(var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+    return bytes;
+  }
+  function pipe(bytes, stream){ return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer(); }
+  D.makeLink = function(){
+    var base = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : ONLINE;
+    var json = new TextEncoder().encode(JSON.stringify(D.fileData()));
+    if(!window.CompressionStream) return Promise.resolve(base + '#w=0.' + toB64(json));
+    return pipe(json, new CompressionStream('deflate-raw')).then(function(z){ return base + '#w=1.' + toB64(new Uint8Array(z)); });
+  };
+  function readLink(hash){
+    var m = /^#w=([01])\.([A-Za-z0-9_-]+)$/.exec(hash);
+    if(!m) return Promise.reject(new Error('bad'));
+    var bytes; try{ bytes = fromB64(m[2]); }catch(e){ return Promise.reject(new Error('bad')); }  // not valid base64
+    var text = m[1] === '0' ? Promise.resolve(bytes) : window.DecompressionStream ? pipe(bytes, new DecompressionStream('deflate-raw')) : Promise.reject(new Error('old'));
+    return text.then(function(b){ return JSON.parse(new TextDecoder().decode(b)); });
+  }
+  function copyText(t){
+    if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).catch(function(){ return fallbackCopy(t); });
+    return fallbackCopy(t);
+  }
+  function fallbackCopy(t){
+    var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try{ ok = document.execCommand('copy'); }catch(e){}
+    ta.remove();
+    return ok ? Promise.resolve() : Promise.reject(new Error('copy'));
+  }
+  document.getElementById('link').addEventListener('click', function(){
+    D.makeLink().then(function(url){
+      return copyText(url).then(function(){ status.textContent = 'Link copied (' + url.length + ' characters). Anyone who opens it gets this wave.'; },
+        function(){ status.textContent = 'Couldn’t copy automatically. Here’s the link: ' + url; });
+    });
+  });
+  // Opening a link (on start-up, or when a new link is pasted into this tab): load it like opening a file, then tidy the
+  // address so a reload doesn't load it again.
+  D.openFromLink = function(){
+    if(location.hash.indexOf('#w=') !== 0) return;
+    var hash = location.hash;
+    history.replaceState(null, '', location.pathname + location.search);
+    readLink(hash).then(function(o){
+      var st = D.fromFile(o);
+      if(!st) throw new Error('bad');
+      if(!st.name) st.name = 'Shared wave';
+      afterAsking('open the shared wave “' + st.name + '”', function(saved){
+        var r = D.loadWave(st);
+        D.save(); D.render(); nameIn.value = D.state.name || ''; D.showUnsaved(); D.resetHistory();
+        status.textContent = 'Opened “' + D.state.name + '” from a link.' + saved +
+          (r.adjusted ? ' Some values were adjusted to fit the editor’s rules.' : '') +
+          (r.newer ? ' It was made with a newer version of this page, so some parts may be missing.' : '');
+      });
+    }).catch(function(e){
+      status.textContent = e.message === 'old' ? 'This browser is too old to open compressed share links; try an up-to-date Chrome, Edge, Firefox or Safari.'
+        : 'That link doesn’t contain a wave this page can open, so nothing changed.';
+    });
+  };
+  window.addEventListener('hashchange', D.openFromLink);
+
   // Drag and drop a file anywhere on the page.
   function hasFiles(e){ return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0; }
   window.addEventListener('dragover', function(e){ if(hasFiles(e)){ e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });

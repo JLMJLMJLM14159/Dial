@@ -58,7 +58,7 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 
 - **Toolbar:**
   - The wave's name, with a `*` while there are unsaved changes (also shown in the browser tab).
-  - Save, Open, **Presets** (Sine, Saw, Triangle or Square to start from), New.
+  - Save, **Link** (copies a share link, see below), Open, **Presets** (Sine, Saw, Triangle or Square to start from), New.
   - Undo and Redo.
   - Play, Frequency (slider from 20 to 2000 Hz, box from 20 to 20,000 Hz, with the nearest note) and Volume.
   - **Theme** (Teal, Studio, Ocean, Synthwave, Paper, Contrast) and **mode** (Auto follows your device, or Light or Dark). Every theme has its own light and dark version, and its two curve colours are checked to stay distinguishable for colour-blind viewers. Remembered per browser.
@@ -133,6 +133,14 @@ Opening a wave or starting a new one asks whether to save first, but only if the
 
 In your own code on the page, `getDialValues()` returns the same `start` and `sections` data.
 
+## Share links
+
+**Link** copies a web address that contains the whole wave, e.g. `https://jlmjlmjlm14159.github.io/Dial/#w=1.fZBBTsMw…`. Nothing is uploaded: the part after `#` holds the same data as a saved file, compressed (deflate) and written in URL-safe base64, and browsers never send that part to the server. Typical waves give links of about 150–350 characters.
+
+- Opening a link loads the wave like opening a file (asking to save first if there are unsaved changes), then tidies the address so a reload doesn't load it again. Pasting a new link into an open tab works too.
+- `#w=1.` means compressed and `#w=0.` uncompressed (used if a browser can't compress); the number lets the link format change later without breaking old links.
+- Links made from a copy opened from disk point at the online site.
+
 ## Files
 
 | File | What it does |
@@ -145,7 +153,7 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `js/drag.js` | Dragging dots in the preview |
 | `js/synth.js` | Playing (Play button, computer keyboard, MIDI), WAV export |
 | `js/harmonics.js` | The harmonics chart |
-| `js/files.js` | Save, Open, New, unsaved-changes tracking |
+| `js/files.js` | Save, Open, New, presets, share links, unsaved-changes tracking |
 | `js/history.js` | Undo and redo |
 | `js/theme.js` | Colour theme and light/dark mode menus |
 | `js/main.js` | Start-up, and turning on offline support |

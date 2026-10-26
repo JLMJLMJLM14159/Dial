@@ -5,6 +5,7 @@
   D.render();
   D.initFiles();
   D.resetHistory();
+  D.openFromLink();  // a share link in the address
 
   // Offline support and installing as an app. These need the page to be served (as on GitHub Pages); a copy opened
   // straight from disk works offline anyway.
