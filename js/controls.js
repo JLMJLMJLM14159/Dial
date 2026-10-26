@@ -1,7 +1,7 @@
 // Section cards, slider/number rows, JSON output and the page buttons.
 (function(D){
   var host = document.getElementById('sections'), strip = document.getElementById('strip');
-  var removeBtn = document.getElementById('remove');
+  var removeBtn = document.getElementById('remove'), symBtn = document.getElementById('sym-btn');
   var out = document.getElementById('out');
   var FIELDS = D.FIELDS, rnd = D.rnd, clamp = D.clamp;
   D.refs = {};
@@ -127,6 +127,7 @@
     var idx = selIndex(), s = D.state.sections[idx];
     buildStrip(idx);
     removeBtn.disabled = D.state.sections.length < 2;
+    symBtn.setAttribute('aria-pressed', D.isHalf() ? 'true' : 'false');
     var sec = document.createElement('section');
     sec.className = 'section';
 
@@ -147,7 +148,7 @@
       sec.appendChild(buildRow(s, f));
       if(f.key === 'ey' && locked){
         var ln = document.createElement('p');
-        ln.className = 'note cardnote'; ln.textContent = 'Linked to the start ■';
+        ln.className = 'note cardnote'; ln.textContent = D.isHalf() ? 'Linked to the start ■ (at its opposite height, for symmetry)' : 'Linked to the start ■';
         ln.title = 'The wave loops back to the start, so this end is also the start’s height. Changing it moves the start square.';
         sec.appendChild(ln);
       }
@@ -177,6 +178,11 @@
     D.selId = null; D.selIdx = Math.min(idx, D.state.sections.length - 1);
     D.refitAll(); D.save(); render();
   });
+  // Half-wave symmetry is part of the wave (saved with it, and undoable), not a view setting.
+  symBtn.addEventListener('click', function(){
+    D.setSymmetry(!D.isHalf());
+    D.save(); render();
+  });
   document.getElementById('fit').addEventListener('click', function(){
     D.scaleToFit();
     D.save(); render();
@@ -199,12 +205,17 @@
   viewBtns.forEach(function(b){ b.addEventListener('click', function(){ toggleView(b.dataset.view); }); });
   showView();
 
+  // The shortcut cheat sheet: ? or the ? button under the preview; Esc or Close shuts it.
+  var keysHelp = document.getElementById('keys-help');
+  function showKeys(){ if(keysHelp.showModal && !keysHelp.open) keysHelp.showModal(); }
+  document.getElementById('keys-btn').addEventListener('click', showKeys);
+
   // Keyboard editing, when not typing in a box, using a slider or choosing from a menu: ← → select the previous or next
   // section, ↑ ↓ move its end (by 0.05, or 0.01 with Shift), [ ] shorten or lengthen it (by 0.1, or 0.01 with Shift),
   // Delete or Backspace removes it, and Q turns snapping on or off.
   function editKeysFree(e){
     var t = e.target;
-    if(document.getElementById('ask').open || t.isContentEditable) return false;
+    if(document.getElementById('ask').open || keysHelp.open || t.isContentEditable) return false;
     return !(t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA');
   }
   window.addEventListener('keydown', function(e){
@@ -215,6 +226,7 @@
     else if(e.code === 'BracketLeft' || e.code === 'BracketRight'){ setKey(s, 'length', s.length + (e.code === 'BracketRight' ? 1 : -1) * (e.shiftKey ? 0.01 : 0.1)); D.save(); renderOut(); }
     else if(e.key === 'Delete' || e.key === 'Backspace'){ if(!removeBtn.disabled) removeBtn.click(); }
     else if(e.code === 'KeyQ'){ if(e.repeat) return; toggleView('snap'); }
+    else if(e.key === '?'){ showKeys(); }
     else return;
     e.preventDefault();
   });

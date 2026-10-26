@@ -28,6 +28,8 @@ The editor always keeps three rules:
 2. **Inside the band.** The curve itself never leaves −1 to 1.
 3. **Closed loop.** The end height is always the start height.
 
+**Half-wave symmetry** (the **Symmetry** button) makes the sections the first half of the cycle; the second half is the same shape upside down (y → −y), drawn dashed in the preview. Such waves contain only odd harmonics (a hollow, square/triangle-like sound). In this mode the last end is linked to the *opposite* of the start's height so the halves join without a jump, and Scale to fit only scales (the wave is already centred).
+
 ### Section types
 
 | Type | Controls | Shape |
@@ -65,7 +67,7 @@ With `a = handle1.x` and `d = length − handle2.x`, a section never goes backwa
 - **Preview:**
   - Click a section's curve to select it. The selected section is drawn bold with its handles.
   - Drag dots to edit: hollow dots are Bézier handles, dark dots are section ends.
-- **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly) and **Ghost copies** (faint copies of the cycles before and after). The page remembers them.
+- **View buttons** under the preview: **Snap** (dragged dots land on a grid, every 0.25 across and every 0.1 in height, drawn faintly) **Ghost copies** (faint copies of the cycles before and after), **Reference…** (load a WAV or another `.dial.json`; it's drawn as a faint highlighter line stretched across one cycle, to trace over; × clears it; kept in the browser but never saved with your wave) and **?** (the keyboard shortcut list). The page remembers them. On touch screens the dots and their grab areas are enlarged to fingertip size.
 - **Section strip:** the section numbers (click one to select it), **+ Add section**, **− Remove section** (removes the selected one) and **Scale to fit**. Scale to fit moves the start onto the middle line and makes the wave as large as fits, without changing its shape.
 - **Section panel:** the controls for the selected section.
 - **Fold-away panels** (the page remembers which are open):
@@ -96,6 +98,7 @@ The editing keys work whenever you aren't typing in a box, using a slider or cho
 | [ / ] | Shorten / lengthen the selected section by 0.1 (Shift: 0.01) |
 | Delete or Backspace | Remove the selected section |
 | Q | Snap on / off |
+| ? | Show the list of shortcuts |
 | Ctrl+Z (⌘Z) | Undo (up to 200 steps; a whole drag or a typed number counts as one step) |
 | Ctrl+Y or Ctrl+Shift+Z (⌘⇧Z) | Redo |
 | A W S E D F T G Y H U J K O L P ; | Play notes while held |
@@ -110,7 +113,7 @@ Opening a wave or starting a new one asks whether to save first, but only if the
 ```json
 {
   "format": "dial-wave",
-  "version": 3,
+  "version": 4,
   "name": "My wave",
   "start": { "y": 0 },
   "sections": [
@@ -123,12 +126,14 @@ Opening a wave or starting a new one asks whether to save first, but only if the
 }
 ```
 
+- `"symmetry": "half"` appears (after `start`) only when half-wave symmetry is on; then the sections are the first half of the cycle and the second half is them upside down.
 - Every section has `type`, `length` and `end.y`. Sine sections add `smooth` (`"both"`, `"end"` or `"start"`), Curve sections add `bend`, and Bézier sections add `handle1` and `handle2`.
-- All numbers are rounded to 4 decimals. The last section's `end.y` always equals `start.y`.
+- All numbers are rounded to 4 decimals. The last section's `end.y` always equals `start.y` (or `−start.y` with symmetry).
 - **Versions:**
   - Version 1 had Flat and Jump types, which now open as Lines.
   - Version 2 introduced Line.
   - Version 3 added Curve.
+  - Version 4 added `symmetry`.
 - When a file is opened, anything that breaks the rules is fixed and the page says so. Files from a newer version open with a warning.
 
 In your own code on the page, `getDialValues()` returns the same `start` and `sections` data.
@@ -151,6 +156,7 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `js/preview.js` | Draws the preview |
 | `js/controls.js` | Section strip, section panel, sliders and number boxes, JSON panel |
 | `js/drag.js` | Dragging dots in the preview |
+| `js/reference.js` | The reference trace |
 | `js/synth.js` | Playing (Play button, computer keyboard, MIDI), WAV export |
 | `js/harmonics.js` | The harmonics chart |
 | `js/files.js` | Save, Open, New, presets, share links, unsaved-changes tracking |
@@ -160,4 +166,4 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `sw.js` | Offline support: keeps a copy of the files, always trying the network first |
 | `manifest.webmanifest`, `icons/` | App name, colours and icons, for installing |
 
-The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, the view buttons under `dial-view-v1`, and the theme under `dial-theme-v1`.
+The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, open panels under `dial-open-*`, the view buttons under `dial-view-v1`, the theme under `dial-theme-v1`, and the reference trace under `dial-ref-v1`.

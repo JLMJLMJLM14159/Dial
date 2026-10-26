@@ -2,7 +2,7 @@
 // so updates show up straight away, and only falls back to the saved copy when the network can't be reached.
 var CACHE = 'dial-v1';
 var FILES = ['./', 'index.html', 'styles.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
-  'js/state.js', 'js/preview.js', 'js/controls.js', 'js/drag.js', 'js/synth.js', 'js/harmonics.js', 'js/files.js', 'js/history.js', 'js/theme.js', 'js/main.js'];
+  'js/state.js', 'js/preview.js', 'js/controls.js', 'js/drag.js', 'js/reference.js', 'js/synth.js', 'js/harmonics.js', 'js/files.js', 'js/history.js', 'js/theme.js', 'js/main.js'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(FILES); }).then(function(){ return self.skipWaiting(); }));

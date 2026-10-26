@@ -125,17 +125,25 @@
     var list = D.state.sections;
     return list.length ? list[list.length - 1] : null;
   }
-  // After a height is changed: the locked end and the first point are one value, so moving the end moves the start.
-  // (Moving the start moves the end through refitAll.)
+  // Half-wave symmetry: the sections are the first half of the cycle, and the second half is the same shape upside down
+  // (y becomes -y). Waves like that have only odd harmonics. The halves join without a jump when the last end is at the
+  // opposite of the start's height, so in this mode that's what the end is locked to.
+  function isHalf(st){ return (st || D.state).symmetry === 'half'; }
+  function setSymmetry(on){
+    if(on) D.state.symmetry = 'half'; else delete D.state.symmetry;
+    refitAll();
+  }
+  // After a height is changed: the locked end and the first point are one value (or opposite values, with symmetry),
+  // so moving the end moves the start. (Moving the start moves the end through refitAll.)
   function linkEnds(obj, key){
-    if(key === 'ey' && obj === lockSection()) D.state.start.sy = obj.ey;
+    if(key === 'ey' && obj === lockSection()) D.state.start.sy = isHalf() ? rnd(-obj.ey) : obj.ey;
   }
 
   // Re-check every section after any change: a section's start height is the previous section's end height.
   // The locked end matches the first point.
   function refitAll(){
     var y = D.state.start.sy, lk = lockSection();
-    if(lk) lk.ey = y;
+    if(lk) lk.ey = isHalf() ? rnd(-y) : y;
     D.state.sections.forEach(function(s){ fitHandles(s); fitY(s, y); y = s.ey; });
   }
 
@@ -197,7 +205,8 @@
       ys.forEach(function(v){ lo = Math.min(lo, v); hi = Math.max(hi, v); });
       y = s.ey;
     });
-    var y0 = st.start.sy, reach = Math.max(hi - y0, y0 - lo);
+    var y0 = st.start.sy, reach = Math.max(hi - y0, y0 - lo), half = isHalf();
+    if(half){ y0 = 0; reach = Math.max(hi, -lo); }  // a symmetric wave is already centred, so it is only scaled
     function f(v){ return reach > 1e-9 ? (v - y0) / reach : v - y0; }  // a flat line just moves onto the middle line
     st.start.sy = rnd(clamp(f(st.start.sy), -1, 1));
     st.sections.forEach(function(s){ s.ey = rnd(clamp(f(s.ey), -1, 1)); s.h1y = rnd(f(s.h1y)); s.h2y = rnd(f(s.h2y)); });
@@ -208,6 +217,15 @@
   // samples, and after the last end (at the start's height) the wave carries on from the start again. A Bézier is read by finding
   // the t where x(t) reaches each sample's x, which has exactly one answer because sections never go backwards.
   function sampleCycle(N){
+    if(isHalf()){
+      // With symmetry the sections fill the first half; the second half is the first upside down.
+      var M = N >> 1, h = sampleSpan(M), out2 = new Float32Array(N);
+      for(var q = 0; q < M; q++){ out2[q] = h[q]; out2[M + q] = -h[q]; }
+      return out2;
+    }
+    return sampleSpan(N);
+  }
+  function sampleSpan(N){
     var geo = sectionGeo(), out = new Float32Array(N), total = 0, i = 0;
     geo.forEach(function(g){ total += g.s.length; });
     if(!(total > 0)) return out;  // no length at all: silence
@@ -268,26 +286,29 @@
 
   function snapshot(state){
     state = state || D.state;
-    return {
-      start: { y: state.start.sy },
-      sections: state.sections.map(function(s, i){
-        // Only what the type uses.
-        var o = { section: i + 1, type: s.type, length: s.length, end: { y: s.ey } };
-        if(s.type === 'curve') o.bend = s.bend;
-        if(s.type === 'sine') o.smooth = s.smooth;
-        if(s.type === 'bezier'){ o.handle1 = { x: s.h1x, y: s.h1y }; o.handle2 = { x: s.h2x, y: s.h2y }; }
-        return o;
-      })
-    };
+    var snap = { start: { y: state.start.sy } };
+    if(isHalf(state)) snap.symmetry = 'half';  // only present when on
+    snap.sections = state.sections.map(function(s, i){
+      // Only what the type uses.
+      var o = { section: i + 1, type: s.type, length: s.length, end: { y: s.ey } };
+      if(s.type === 'curve') o.bend = s.bend;
+      if(s.type === 'sine') o.smooth = s.smooth;
+      if(s.type === 'bezier'){ o.handle1 = { x: s.h1x, y: s.h1y }; o.handle2 = { x: s.h2x, y: s.h2y }; }
+      return o;
+    });
+    return snap;
   }
 
   // A saved wave file: the recorded values with a format name, version and the wave's name, so it can be recognised,
   // opened again and shared. A later version can add fields without breaking old files. Version 2 replaced the Flat and
-  // Jump types with Line (version 1 files still open: their Flat and Jump sections become lines); version 3 added Curve.
-  var FORMAT = 'dial-wave', VERSION = 3;
+  // Jump types with Line (version 1 files still open: their Flat and Jump sections become lines); version 3 added Curve;
+  // version 4 added "symmetry": "half".
+  var FORMAT = 'dial-wave', VERSION = 4;
   function fileData(){
-    var snap = snapshot();
-    return { format: FORMAT, version: VERSION, name: D.state.name || '', start: snap.start, sections: snap.sections };
+    var snap = snapshot(), o = { format: FORMAT, version: VERSION, name: D.state.name || '', start: snap.start };
+    if(snap.symmetry) o.symmetry = snap.symmetry;
+    o.sections = snap.sections;
+    return o;
   }
   // Turn a saved wave (or a copy of the recorded values) back into editor state, without fixing anything yet.
   // Returns null if it isn't a wave at all. Missing values get sensible defaults.
@@ -311,8 +332,10 @@
       }
       secs.push(s); y = s.ey;
     }
-    return { name: typeof o.name === 'string' ? o.name.slice(0, 100) : '', newer: num(o.version, 1) > VERSION,
-             start: { id:'start', sx:0, sy: sy }, sections: secs };
+    var st = { name: typeof o.name === 'string' ? o.name.slice(0, 100) : '', newer: num(o.version, 1) > VERSION,
+               start: { id:'start', sx:0, sy: sy }, sections: secs };
+    if(o.symmetry === 'half') st.symmetry = 'half';
+    return st;
   }
   // What counts as the wave for the unsaved-changes check: its name and its recorded values.
   function waveKey(st){ st = st || D.state; return JSON.stringify([st.name || '', snapshot(st)]); }
@@ -339,7 +362,7 @@
   }
 
   D.FIELDS = FIELDS; D.START_FIELDS = START_FIELDS; D.BYKEY = BYKEY; D.TYPES = TYPES; D.SMOOTHS = SMOOTHS;
-  D.shapeY = shapeY; D.setType = setType; D.lockSection = lockSection; D.linkEnds = linkEnds; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
+  D.shapeY = shapeY; D.setType = setType; D.isHalf = isHalf; D.setSymmetry = setSymmetry; D.lockSection = lockSection; D.linkEnds = linkEnds; D.scaleToFit = scaleToFit; D.sampleCycle = sampleCycle;
   D.rnd = rnd; D.clamp = clamp; D.forwardOnly = forwardOnly; D.inBand = inBand; D.refitAll = refitAll;
   D.newState = newState; D.blank = blank; D.load = load; D.save = save;
   D.snapshot = function(){ return snapshot(); }; D.sectionGeo = sectionGeo;

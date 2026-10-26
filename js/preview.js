@@ -3,6 +3,7 @@
   var svg = document.getElementById('preview');
   D.svg = svg;
   D.frozenVB = null;
+  var coarse = window.matchMedia ? window.matchMedia('(pointer: coarse)') : { matches: false };  // a finger rather than a mouse
 
   // View options, kept per browser: snap to grid, and ghost copies of the neighbouring cycles.
   var VKEY = 'dial-view-v1';
@@ -11,12 +12,18 @@
   D.saveView = function(){ try{ localStorage.setItem(VKEY, JSON.stringify(D.view)); }catch(e){} };
   D.GRID = { x: 0.25, y: 0.1 };  // snap steps: x across the whole wave, heights from the middle line
 
-  // The path of one section, moved dx along x (for the ghost copies).
-  function sectionPath(g, dx, start){
-    var P = g.P, s = g.s, d = (start ? 'M' : ' L') + (P[0][0] + dx) + ' ' + (-P[0][1]);
-    if(s.type === 'bezier') d += ' C'+(P[1][0]+dx)+' '+(-P[1][1])+' '+(P[2][0]+dx)+' '+(-P[2][1])+' '+(P[3][0]+dx)+' '+(-P[3][1]);
-    else if(s.type === 'sine' || s.type === 'curve'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + dx + s.length * k / 64)+' '+(-D.shapeY(s, g.Y, k / 64)); }
-    else d += ' L'+(P[3][0]+dx)+' '+(-P[3][1]);
+  // The path of one section, moved dx along x (for the ghost copies), and upside down if flip (for the mirrored half).
+  function sectionPath(g, dx, start, flip){
+    var P = g.P, s = g.s, f = flip ? 1 : -1, d = (start ? 'M' : ' L') + (P[0][0] + dx) + ' ' + (f * P[0][1]);
+    if(s.type === 'bezier') d += ' C'+(P[1][0]+dx)+' '+(f*P[1][1])+' '+(P[2][0]+dx)+' '+(f*P[2][1])+' '+(P[3][0]+dx)+' '+(f*P[3][1]);
+    else if(s.type === 'sine' || s.type === 'curve'){ for(var k = 1; k <= 64; k++) d += ' L'+(g.X + dx + s.length * k / 64)+' '+(f * D.shapeY(s, g.Y, k / 64)); }
+    else d += ' L'+(P[3][0]+dx)+' '+(f*P[3][1]);
+    return d;
+  }
+  // The whole cycle as one path: the sections, then (with symmetry) the same sections upside down.
+  function cyclePath(segs, dx, span, half){
+    var d = segs.map(function(g, i){ return sectionPath(g, dx, i === 0, false); }).join('');
+    if(half) d += segs.map(function(g){ return sectionPath(g, dx + span, false, true); }).join('');
     return d;
   }
 
@@ -27,11 +34,9 @@
     var sel = D.selIdx, pick = '', segs = D.sectionGeo(), st = D.state.start, pts = [[0,0],[0,1],[0,-1],[st.sx,st.sy]];
     segs.forEach(function(g){ (g.s.type === 'bezier' ? g.P : [g.P[0], g.P[3]]).forEach(function(p){ pts.push(p); }); });
     var minX=Infinity, maxX=-Infinity, minY=Infinity, maxY=-Infinity;
-    pts.forEach(function(p){
-      minX=Math.min(minX,p[0]); maxX=Math.max(maxX,p[0]);
-      minY=Math.min(minY,p[1]); maxY=Math.max(maxY,p[1]);
-    });
-    var total = segs.length ? segs[segs.length - 1].P[3][0] - st.sx : 0;
+    var half = D.isHalf(), span = segs.length ? segs[segs.length - 1].P[3][0] - st.sx : 0, total = half ? 2 * span : span;
+    if(half) pts.slice().forEach(function(p){ pts.push([p[0] + span, -p[1]]); });  // the mirrored half counts towards the view
+    pts.forEach(function(p){ minX=Math.min(minX,p[0]); maxX=Math.max(maxX,p[0]); minY=Math.min(minY,p[1]); maxY=Math.max(maxY,p[1]); });
     if(D.view.ghosts && total > 0){ minX -= total * 0.2; maxX += total * 0.2; }  // room for part of each neighbouring cycle
     var cx=(minX+maxX)/2, cy=(minY+maxY)/2;
     var w=Math.max(maxX-minX, 1e-3), h=Math.max(maxY-minY, w*0.3);
@@ -39,6 +44,10 @@
     var vb = D.frozenVB || [cx-w/2, -cy-h/2, w, h].join(' ');
     svg.setAttribute('viewBox', vb);
     var u=parseFloat(vb.split(' ')[2])*0.012, ne=' vector-effect="non-scaling-stroke"', hits='';
+    // On touch screens, dots are at least 10px and their grab areas 30px (about a fingertip) on screen, however small
+    // the preview is drawn. u is the dot size in drawing units, so convert using how big the drawing is shown.
+    var box = svg.getBoundingClientRect(), vbs = vb.split(' ').map(parseFloat);
+    if(coarse.matches && box.width > 0) u = Math.max(u, 10 / Math.min(box.width / vbs[2], box.height / vbs[3]));
     function hit(x,y,i,k){ return '<circle cx="'+x+'" cy="'+(-y)+'" r="'+(u*3)+'" fill="transparent" data-i="'+i+'" data-k="'+k+'" style="cursor:grab"/>'; }
     // The guide lines run well past the view so they reach the edges when the box is wider than the drawing.
     var vp = vb.split(' ').map(parseFloat), x1 = vp[0] - 10 * vp[2], x2 = vp[0] + 11 * vp[2];
@@ -50,10 +59,22 @@
       for(var xx = Math.ceil(vp[0] / gx) * gx; xx <= vp[0] + vp[2]; xx += gx) html += '<line x1="'+xx+'" y1="-1" x2="'+xx+'" y2="1"'+gl;
       for(var yy = -10; yy <= 10; yy++) if(yy % 10) html += '<line x1="'+x1+'" y1="'+(yy / 10)+'" x2="'+x2+'" y2="'+(yy / 10)+'"'+gl;
     }
+    if(D.reference && total > 0){
+      // The reference trace, stretched across one cycle: a wide faint line to trace over.
+      var ry = D.reference.ys, rd = '';
+      for(var ri = 0; ri <= ry.length; ri++) rd += (ri ? ' L' : 'M') + (st.sx + total * ri / ry.length) + ' ' + (-ry[ri % ry.length]);
+      html += '<path d="'+rd+'" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round" stroke-linecap="round" opacity=".18"'+ne+'/>';
+    }
     if(D.view.ghosts && total > 0){
       // Faint copies of the whole wave just before and after it: it repeats forever.
       [-total, total].forEach(function(dx){
-        html += '<path d="'+segs.map(function(g, i){ return sectionPath(g, dx, i === 0); }).join('')+'" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linejoin="round" opacity=".35"'+ne+'/>';
+        html += '<path d="'+cyclePath(segs, dx, span, half)+'" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linejoin="round" opacity=".35"'+ne+'/>';
+      });
+    }
+    if(half){
+      // The automatic second half: each section again, upside down, dashed to show it can't be edited directly.
+      segs.forEach(function(g, i){
+        html += '<path d="'+sectionPath(g, span, true, true)+'" fill="none" stroke="'+(i % 2 ? 'var(--c2)' : 'var(--c1)')+'" stroke-width="2.5" stroke-dasharray="6 4" stroke-linejoin="round" opacity=".5"'+ne+'/>';
       });
     }
     segs.forEach(function(g, i){

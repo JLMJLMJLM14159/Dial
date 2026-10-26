@@ -88,7 +88,7 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
 .pkey.white.on span{color:var(--accent-ink)}
 .viewbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .viewbar .toggle{padding:4px 10px;font-size:.88rem;color:var(--muted)}
-.viewbar .toggle[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+.toggle[aria-pressed=true]{color:var(--ink);border-color:var(--accent);background:color-mix(in srgb, var(--accent) 12%, transparent)}
 kbd{font:inherit;font-size:.75rem;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:2px;color:var(--muted)}
 
 /* Fold-away panels for things used now and then. */
@@ -129,6 +129,11 @@ dialog{background:var(--surface);color:var(--ink);border:1px solid var(--line);b
 dialog::backdrop{background:rgba(0,0,0,.45)}
 dialog h2{font-size:1.05rem;margin:0 0 6px}
 dialog p{margin:0 0 6px}
+.keys-help{max-width:560px}
+.keys-help table{border-collapse:collapse;width:100%;font-size:.9rem;margin:6px 0 4px}
+.keys-help th{text-align:left;color:var(--muted);font-weight:600;padding:10px 0 4px}
+.keys-help td{padding:4px 8px 4px 0;border-top:1px solid var(--line);vertical-align:top}
+.keys-help td:first-child{white-space:nowrap;width:1%;padding-right:16px}
 select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer}
 select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .dial.choice{grid-template-columns:96px minmax(0,220px)}
