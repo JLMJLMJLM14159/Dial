@@ -3,7 +3,7 @@
 // before anything replaces a wave that has changes.
 (function(D){
   var nameIn = document.getElementById('wave-name'), picker = document.getElementById('wave-file');
-  var status = document.getElementById('filestatus'), unsavedEl = document.getElementById('unsaved');
+  var unsavedEl = document.getElementById('unsaved');
   var ask = document.getElementById('ask'), askText = document.getElementById('ask-text');
 
   // The wave has unsaved changes when it differs from how it was when last saved, opened or started.
@@ -49,8 +49,8 @@
     markSaved();
     return name;
   }
-  // The toolbar buttons never write to the status line at the top (the person asked for that); real problems that would
-  // otherwise go unnoticed get a popup instead.
+  // Nothing here shows a message when things go fine (the owner asked for that); real problems that would otherwise go
+  // unnoticed get a popup.
   document.getElementById('save').addEventListener('click', function(){ saveWave(); });
 
   // Runs the replacing step once any unsaved changes are dealt with; returns a note about the save, if one was made.
@@ -169,13 +169,13 @@
       afterAsking('open the shared wave “' + st.name + '”', function(saved){
         var r = D.loadWave(st);
         D.save(); D.render(); nameIn.value = D.state.name || ''; D.showUnsaved(); D.resetHistory();
-        status.textContent = 'Opened “' + D.state.name + '” from a link.' + saved +
-          (r.adjusted ? ' Some values were adjusted to fit the editor’s rules.' : '') +
-          (r.newer ? ' It was made with a newer version of this page, so some parts may be missing.' : '');
+        var warn = (r.adjusted ? 'Some values were adjusted to fit the editor’s rules. ' : '') +
+          (r.newer ? 'It was made with a newer version of this page, so some parts may be missing.' : '');
+        if(warn) D.popup('Opened “' + D.state.name + '”', warn.trim());
       });
     }).catch(function(e){
-      status.textContent = e.message === 'old' ? 'This browser is too old to open compressed share links; try an up-to-date Chrome, Edge, Firefox or Safari.'
-        : 'That link doesn’t contain a wave this page can open, so nothing changed.';
+      D.popup('That link couldn’t be opened', e.message === 'old' ? 'This browser is too old to open compressed share links; try an up-to-date Chrome, Edge, Firefox or Safari.'
+        : 'It doesn’t contain a wave this page can open, so nothing changed.');
     });
   };
   window.addEventListener('hashchange', D.openFromLink);

@@ -64,7 +64,6 @@ main{max-width:1180px;margin:0 auto;padding:12px 20px 64px}
   .toolbar .tb-freq{flex:1 1 40px;width:auto;min-width:40px}
   .toolbar .tb-num{width:72px}
 }
-.status{color:var(--muted);font-size:.9rem;margin:0 0 8px;min-height:1.35em}
 
 /* Preview and section strip beside the selected section's controls on wide screens, stacked on narrow ones. */
 .workspace{display:grid;gap:16px;align-items:start}
