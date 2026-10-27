@@ -170,3 +170,9 @@ In your own code on the page, `getDialValues()` returns the same `start` and `se
 | `manifest.webmanifest`, `icons/` | App name, colours and icons, for installing |
 
 The scripts share one `window.Dial` object and load in the order listed in `index.html`. The browser keeps the current wave under the storage key `dial-sections-v3`, synth settings under `dial-synth-v1`, the view buttons under `dial-view-v1`, the theme under `dial-theme-v1`, and the reference trace under `dial-ref-v1`.
+
+## License
+
+Copyright © 2026 JLMJLMJLM14159
+
+Dial is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3, as published by the Free Software Foundation. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See [`LICENSE`](LICENSE) for the full text.
