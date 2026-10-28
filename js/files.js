@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Saving and opening wave files (name.dial.json), so waves can be kept and shared. Files open with the Open wave button
 // or by dropping one anywhere on the page. Tracks unsaved changes: a * in the tab title, and a "save first?" question
 // before anything replaces a wave that has changes.

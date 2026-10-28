@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Section cards, slider/number rows, JSON output and the page buttons.
 (function(D){
   var host = document.getElementById('sections'), strip = document.getElementById('strip');

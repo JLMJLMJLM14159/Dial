@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Offline support: keeps a copy of Dial's files so it opens without internet. Online it always asks the network first,
 // so updates show up straight away, and only falls back to the saved copy when the network can't be reached.
 var CACHE = 'dial-v1';

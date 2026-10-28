@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Harmonics view: a column chart of how strong each of the first 32 harmonics of the wave is (harmonic n vibrates n times
 // per cycle, so at a 220 Hz note the 3rd is at 660 Hz), as a share of the strongest one. It's only for looking: the
 // sections stay as they are. Like the synth, it leaves out the average height. Always on screen, beside the editor.

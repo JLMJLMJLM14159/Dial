@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Colour theme and light/dark mode, from the two menus at the end of the toolbar. Kept per browser; the saved choice is
 // first applied by a small script in the page's <head>, before anything is drawn.
 (function(D){

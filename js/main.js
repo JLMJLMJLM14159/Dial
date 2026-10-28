@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Start-up: expose the values for other code, restore saved state and draw the page.
 (function(D){
   window.getDialValues = D.snapshot;

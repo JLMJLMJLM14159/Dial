@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Field definitions, state, persistence and geometry. No DOM access here.
 (function(D){
   var KEY = 'dial-sections-v3';

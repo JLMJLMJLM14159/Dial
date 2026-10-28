@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // SVG preview drawing. D.frozenVB holds the viewBox while a drag is in progress.
 (function(D){
   var svg = document.getElementById('preview');

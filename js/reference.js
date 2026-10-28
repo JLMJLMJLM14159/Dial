@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Reference trace: a WAV or another saved wave, drawn faintly behind the curves (stretched across one cycle) so a shape
 // can be traced with sections. It's only a guide: kept in this browser, never part of the wave or its files.
 (function(D){

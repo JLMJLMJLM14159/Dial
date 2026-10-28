@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later
+   Copyright © 2026 JLMJLMJLM14159 */
 :root{
   --bg:#f3f4f1; --surface:#ffffff; --ink:#1d2321; --muted:#63706b; --line:#d9ddd8; --accent:#0f7b6c; --accent-ink:#ffffff; --code:#eceee9; --c1:#0f7b6c; --c2:#7a5cc2; color-scheme:light;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);

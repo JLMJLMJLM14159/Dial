@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Pointer dragging of the dots in the preview. The view is frozen while dragging and re-fits on release.
 (function(D){
   var svg = D.svg, drag = null;

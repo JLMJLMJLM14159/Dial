@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Synth: plays the line as a repeating wave through the browser's built-in oscillator, from the Play button, the computer
 // keyboard or a MIDI keyboard, and downloads one cycle as a WAV file.
 (function(D){

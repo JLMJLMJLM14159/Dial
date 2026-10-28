@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright © 2026 JLMJLMJLM14159
 // Undo and redo (Ctrl+Z, and Ctrl+Y or Ctrl+Shift+Z; ⌘ on a Mac), plus Undo and Redo buttons. A burst of changes counts as
 // one step: a step is recorded once nothing has changed for half a second and no mouse button or finger is held down, so
 // a whole drag or a typed number undoes in one go. Opening a wave or starting a new one starts a fresh history.
